@@ -1,0 +1,53 @@
+#Made by xlr100#6932 (For any bugs)
+
+#--------------------------------------------------------
+#Configuration
+options:
+    permission: skript.clearlag
+    permission message: &cYou don't have access to this command!
+    prefix: &e&l[Clearlag]
+    cooldown: 5 minutes
+    wait: 10 seconds
+#--------------------------------------------------------
+
+every {@cooldown}:
+    {clearlag} isn't false
+    broadcast "{@prefix} &aClearing lag in {@wait}!"
+    wait {@wait}
+    make console execute command "/clear lag all"
+
+command /clear [<text>] [<text>] [<text>]:
+    permission: {@permission}
+    permission message: {@permission message}
+    trigger:
+        if arg-1 is "lag":
+            if arg-2 is "mobs":
+                delete all mobs
+                broadcast "{@prefix} &6Cleared all mobs"
+            else if arg-2 is "drops":
+                delete all dropped items
+                broadcast "{@prefix} &6Cleared all dropped items"
+            else if arg-2 is "all":
+                make console execute command "/clear lag mobs"
+                make console execute command "/clear lag drops"
+            else if arg-2 is "toggle":
+                if {clearlag} is false:
+                    set {clearlag} to true
+                    send "{@prefix} » &aClearlag is now on"
+                else:
+                    set {clearlag} to false
+                    send "{@prefix} » &aClearlag is now off"
+            else:
+                send "{@prefix} &cCorrect Usage: &7/clear lag mobs/drops/all/toggle"
+        else if arg-1 is "chat":
+            loop 100 times:
+                broadcast ""
+            broadcast "&eChat cleared by &b%player%"
+        else:
+            send "&7-----------------{@prefix}&7-----------------------"
+            send "&e/clear lag mobs &7Clears all mobs"
+            send "&e/clear lag drops &7Clears all dropped items"
+            send "&e/clear lag all &7Clears all dropped items and mobs"
+            send "&e/clear lag toggle &7Toggle clearlag on/off"
+            send "&e/clear chat &7Clears the chat"
+            send "&7-----------------{@prefix}&7-----------------------"
