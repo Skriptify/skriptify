@@ -1,0 +1,60 @@
+options:
+  P: &c&lITEMGUI&7
+ 
+command /edit:
+  trigger:
+    if player's held item is not air:
+      set {inv::%player's uuid%} to chest inventory with 3 rows named "{@P}&3 Item Editor"
+      set slot 4 of {inv::%player's uuid%} to emerald named "&c&lINFO" with lore "&7TYPE:&3 %tool%" and "&7NAME: &3%name of player's tool%" and "&7LORE: &3%lore of player's tool%"
+      set slot 11 of {inv::%player's uuid%} to glowstone dust named "&c&lRENAME" with lore "&7&oSelect this to rename your item."
+      set slot 15 of {inv::%player's uuid%} to name tag named "&c&lEDIT LORE" with lore "&7&oSelect this to edit the lore your item."
+      open {inv::%player's uuid%} to player
+    else:
+      send "{@P} Hold something to edit it!"
+ 
+on inventory click:
+  if player's current inventory = {inv::%player's uuid%}:
+    close player's inventory
+    cancel event
+    if clicked slot is 11:
+      set {itemgui::rename-event::%player's uuid%} to true
+      send ""
+      send "{@P}"
+      send "&7> Please type in chat the &3&nnew name&7 for your item."
+      send ""
+    if clicked slot is 15:
+      set {itemgui::editlore-event::%player's uuid%} to true
+      send ""
+      send "{@P}"
+      send "&7> Please type in chat the &3&nlore number&7 for your item [1, 2, 3, 4 or 5]."
+      send ""
+
+on inventory close:
+	delete {inv::%player's uuid%}
+
+on chat:
+  if {itemgui::rename-event::%player's uuid%} is set:
+    cancel event
+    delete {itemgui::rename-event::%player's uuid%}
+    set name of player's held item to "&f%coloured message%"
+    send "{@P} Your item's name has been set to &3""%coloured message%""&7!"
+  else if {itemgui::editlore-event::%player's uuid%} is true:
+    set {_m} to message parsed as number
+    if {_m} is 1 or 2 or 3 or 4 or 5:
+      cancel event
+      set {itemgui::editlore-lore::%player's uuid%} to message parsed as integer
+      set {itemgui::editlore2-event::%player's uuid%} to true
+      send ""
+      send "{@P}"
+      send "&7> Please type in chat the &3&nlore text&7 for your item."
+      send ""
+      delete {itemgui::editlore-event::%player's uuid%}
+    else:
+      send "{@P} Invalid number."
+      delete {itemgui::editlore-event::%player's uuid%}
+  else if {itemgui::editlore2-event::%player's uuid%} is set:
+    cancel event
+    set line {itemgui::editlore-lore::%player's uuid%} of player's held item's lore to "&f%coloured message%"
+    send "{@P} Your item's lore has been set to &3""%coloured message%""&7!"
+    delete {itemgui::editlore2-event::%player's uuid%}
+    delete {itemgui::editlore-lore::%player's uuid%}
