@@ -1,0 +1,308 @@
+#SkriptMinesLite skripted by: SH4D03
+
+# Please note that this is Version 1.0 so there may be some inefficiencies or bugs
+# Please report all bugs to SH4D03#7511 on discord
+
+#Do /sml or /skriptmineslite in game for a full list of available commands
+
+
+options:
+	prefix: &3&lSkriptMinesLite &8|&f
+	skriptname: SkriptMinesLite         #Please Enter the name of the skript file here
+	color1: &f
+	color2: &3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#HARD CODE
+#DO NOT edit if you don't know what you are doing
+
+on right click with stone axe:
+	if player's tool is stone axe named "&3&lRegion Selection Tool" with lore "", "&fLeft Click: Select position 1", "&fRight Click: Select position 2", "" and "&3&lSkriptMinesLite":
+		cancel event
+		set {SkriptMinesLite::%player's uuid%::pos2} to location of clicked block
+		send "&3&lSkriptMinesLite &8|&f Position 2 set to: &3%location of clicked block%" to player
+on left click with stone axe:
+	if player's tool is stone axe named "&3&lRegion Selection Tool" with lore "", "&fLeft Click: Select position 1", "&fRight Click: Select position 2", "" and "&3&lSkriptMinesLite":
+		cancel event
+		set {SkriptMinesLite::%player's uuid%::pos1} to location of clicked block
+		send "&3&lSkriptMinesLite &8|&f Position 1 set to: &3%location of clicked block%" to player
+command /skriptmineslite [<text>] [<text>] [<text>] [<text>]:
+	permission: op	
+	aliases: /sml
+	trigger:
+		if arg-1 is "tool":
+			give player stone axe named "&3&lRegion Selection Tool" with lore "", "&fLeft Click: Select position 1", "&fRight Click: Select position 2", "" and "&3&lSkriptMinesLite"
+			send "&3&lSkriptMinesLite &8|&f Left Click: &3Select position 1" to player
+			send "&3&lSkriptMinesLite &8|&f Right Click: &3Select position 2" to player
+		else if arg-1 is "create":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is set:
+					send "&3&lSkriptMinesLite &8|&f This mine already exists!" to player
+					stop
+				else:
+					if {SkriptMinesLite::%player's uuid%::pos1} or {SkriptMinesLite::%player's uuid%::pos2} is not set:
+						send "&3&lSkriptMinesLite &8|&f You must first make a region selection" to player
+						send "&3&lSkriptMinesLite &8|&f Do &3/sml tool&f to get the region selection tool" to player
+					else:
+						set {SkriptMinesLite::%arg-2%} to arg-2
+						set {SkriptMinesLite::%arg-2%::pos1} to {SkriptMinesLite::%player's uuid%::pos1}
+						set {SkriptMinesLite::%arg-2%::pos2} to {SkriptMinesLite::%player's uuid%::pos2}
+						set {SkriptMinesLite::%arg-2%::silentreset} to false
+						set {SkriptMinesLite::%arg-2%::timer} to "None"
+						set {SkriptMinesLite::%arg-2%::capacity} to 100
+						set {SkriptMinesLite::%arg-2%::teleport} to {SkriptMinesLite::%arg-2%::pos1}
+						send "&3&lSkriptMinesLite &8|&f Mine &3%arg-2%&f was saved!" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml create <mine name>" to player
+		else if arg-1 is "delete":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					delete {SkriptMinesLite::%arg-2%::*}
+					delete {SkriptMinesLite::%arg-2%}
+					send "&3&lSkriptMinesLite &8|&f Mine &3%arg-2%&f was deleted!" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml create <mine name>" to player
+		else if arg-1 is "redefine":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					if {SkriptMinesLite::%player's uuid%::pos1} or {SkriptMinesLite::%player's uuid%::pos2} is not set:
+						send "&3&lSkriptMinesLite &8|&f You must first make a region selection" to player
+						send "&3&lSkriptMinesLite &8|&f Do &3/sml tool&f to get the region selection tool" to player
+					else:
+						set {SkriptMinesLite::%arg-2%::pos1} to {SkriptMinesLite::%player's uuid%::pos1}
+						set {SkriptMinesLite::%arg-2%::pos2} to {SkriptMinesLite::%player's uuid%::pos2}
+						send "&3&lSkriptMinesLite &8|&f Mine &3%arg-2%&f was redefined!" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml redefine <mine name>" to player
+		else if arg-1 is "set":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					set {_item} to arg-3
+					replace all "_" in {_item} with " "
+					set {_item} to {_item} parsed as item
+					if {_item} is not block:
+						send "&3&lSkriptMinesLite &8|&f Usage: &3/sml set <mine name> <blocktype> <percentage>" to player
+						stop
+					set {_percentage} to arg-4
+					replace all "%%" in {_percentage} with ""
+					set {_percentage} to {_percentage} parsed as integer
+					if {_percentage} is not integer:
+						send "&3&lSkriptMinesLite &8|&f Usage: &3/sml set <mine name> <blocktype> <percentage>" to player
+						stop
+					else if {SkriptMinesLite::%arg-2%::capacity} < {_percentage}:
+						send "&3&lSkriptMinesLite &8|&f This mine doesn't have enough space. &3%{SkriptMinesLite::%arg-2%::capacity}%&3%% &fremaining" to player
+						stop
+					remove {_percentage} from {SkriptMinesLite::%arg-2%::capacity}
+					set {_item} to "%{_item}%"
+					set {SkriptMinesLite::%arg-2%::blocks::%{_item}%} to "%{_percentage}%"
+					send "&3&lSkriptMinesLite &8|&f This mine is now &3%{_percentage}%&3%% %{_item}%. &3%{SkriptMinesLite::%arg-2%::capacity}%&3%% &fremaining" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml set <mine name> <blocktype> <percentage>" to player
+		else if arg-1 is "unset":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					set {_item} to arg-3
+					replace all "_" in {_item} with " "
+					set {_item} to {_item} parsed as item
+					if {_item} is not block:
+						send "&3&lSkriptMinesLite &8|&f Usage: &3/sml unset <mine name> <blocktype> " to player
+						stop
+					set {_item} to "%{_item}%"
+					if {SkriptMinesLite::%arg-2%::blocks::%{_item}%} is not set:
+						send "&3&lSkriptMinesLite &8|&f This block does not exist in this mine" to player
+						stop
+					set {_percentage} to {SkriptMinesLite::%arg-2%::blocks::%{_item}%} parsed as integer
+					add {_percentage} to {SkriptMinesLite::%arg-2%::capacity}
+					delete {SkriptMinesLite::%arg-2%::blocks::%{_item}%}
+					send "&3&lSkriptMinesLite &8|&f You unset &3%{_item}%&f. &3%{SkriptMinesLite::%arg-2%::capacity}%&3%% &fremaining" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml unset <mine name> <blocktype>" to player
+		else if arg-1 is "reset":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					loop {SkriptMinesLite::%arg-2%::blocks::*}:
+						set {_block} to loop-index parsed as item
+						set {_percentage} to loop-value parsed as integer
+						loop {_percentage} times:
+							add {_block} to {_MineBlocks::*}
+					loop blocks within block at {SkriptMinesLite::%arg-2%::pos1} and block at {SkriptMinesLite::%arg-2%::pos2}:
+						set {_block} to a random element out of {_MineBlocks::*}
+						set loop-block to {_block}
+					if {SkriptMinesLite::%arg-2%::silentreset} is false:
+						broadcast "{@prefix} {@color2}%arg-2% {@color1}was reset!"
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml reset <mine name>" to player
+		else if arg-1 is "setsilent":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					if {SkriptMinesLite::%arg-2%::silentreset} is false:
+						set {SkriptMinesLite::%arg-2%::silentreset}  to true
+						send "&3&lSkriptMinesLite &8|&3 %arg-2%&f will now reset silently." to player
+					else:
+						set {SkriptMinesLite::%arg-2%::silentreset} to false
+						send "&3&lSkriptMinesLite &8|&3 %arg-2%&f will no longer reset silently." to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml setsilent <mine name>" to player
+		else if arg-1 is "list":
+			if {SkriptMinesLite::*} is not set:
+				send "&3&lSkriptMinesLite &8|&f There are currently no mines!" to player
+				stop
+			else:
+				send "&3&lMines:" to player
+				loop {SkriptMinesLite::*}:
+					send "&f -%loop-value%" to player
+		else if arg-1 is "time":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					set {_time} to arg-3 parsed as integer
+					if {_time} is not integer:
+						if arg-3 is "reset":
+							set {SkriptMinesLite::%arg-2%::timer} to "None"
+							delete {SkriptMinesLite::%arg-2%::lastreset}
+							send "&3&lSkriptMinesLite &8|&f &3%arg-2%&f will no longer reset automatically" to player
+							stop
+						send "&3&lSkriptMinesLite &8|&f Usage: &3/sml time <mine name> <minutes/reset>" to player
+						stop
+					set {SkriptMinesLite::%arg-2%::timer} to "%{_time}% minutes" parsed as timespan
+					set {SkriptMinesLite::%arg-2%::lastreset} to now
+					send "&3&lSkriptMinesLite &8|&f &3%arg-2%&f will now reset every &3%{_time}% &3minutes" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml time <mine name> <minutes/reset>" to player
+		else if arg-1 is "teleport" or "tp":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					if arg-3 is set:
+						set {_player} to arg-3 parsed as offline player
+					else:
+						set {_player} to player
+					if {_player} is not online:
+						send "{@prefix} This player is not online!" to player
+					else:
+						send "{@prefix} Teleporting..." to {_player}
+						send "{@prefix} Teleporting..." to player if {_player} != player
+						teleport {_player} to {SkriptMinesLite::%arg-2%::teleport}
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml tp <mine name> [<player>]" to player
+		else if arg-1 is "setteleport" or "settp":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					set {SkriptMinesLite::%arg-2%::teleport} to location of player
+					send "&3&lSkriptMinesLite &8|&f Mine tp was changed to: &3%location of player%" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml settp <mine name>" to player
+		else if arg-1 is "info" or "information":
+			if arg-2 is set:
+				if {SkriptMinesLite::%arg-2%} is not set:
+					send "&3&lSkriptMinesLite &8|&f This mine doesn't exists!" to player
+					stop
+				else:
+					send "" to player
+					send "&f-----< &3&lSkriptMinesLite &f>-----" to player
+					send "&3&lMine Name: &f%{SkriptMinesLite::%arg-2%}%" to player
+					send "&3&lPosition 1: &f%{SkriptMinesLite::%arg-2%::pos1}%" to player
+					send "&3&lPosition 2: &f%{SkriptMinesLite::%arg-2%::pos2}% %newline% " to player
+					send "&3&lTimer: &f%{SkriptMinesLite::%arg-2%::timer}%" to player	
+					send "&3&lTeleport: &f%{SkriptMinesLite::%arg-2%::teleport}%" to player
+					send "&3&lSilentReset: &f%{SkriptMinesLite::%arg-2%::silentreset}%" to player
+					send "&3&lCapacity: &f%{SkriptMinesLite::%arg-2%::capacity}%%% &3/&f 100%%" to player
+					send "&f-----< &3&lSkriptMinesLite &f>-----" to player
+					send "" to player
+			else:
+				send "&3&lSkriptMinesLite &8|&f Usage: &3/sml info <mine name>" to player
+		else if arg-1 is "reload":
+			send "&3&lSkriptMinesLite &8|&f Reloading..." to player
+			execute console command "skript reload {@skriptname}"
+			send "&3&lSkriptMinesLite &8|&f Successfully reloaded Version 1.0" to player
+		else:
+			send "" to player
+			send "&f-----< &3&lSkriptMinesLite &f>-----" to player
+			send " &f/sml create <mine name>" to player
+			send " &f/sml delete <mine name>" to player
+			send " &f/sml set <mine name> <blocktype> <percentage>" to player
+			send " &f/sml redefine <mine name>" to player
+			send " &f/sml unset <mine name> <blocktype>" to player
+			send " &f/sml reset <mine name>" to player
+			send " &f/sml setsilent <mine name>" to player
+			send " &f/sml list " to player
+			send " &f/sml tool" to player
+			send " &f/sml time <mine name> <minutes/reset>" to player
+			send " &f/sml tp <mine name> [<player>]" to player
+			send " &f/sml settp <mine name>" to player
+			send " &f/sml info <mine name>" to player
+			send " &f/sml reload" to player
+			send "&f-----< &3&lSkriptMinesLite &f>-----" to player
+			send "" to player
+on command "skript reload {@skriptname}":
+	if executor is not console:
+		cancel event
+		send "&3&lSkriptMinesLite &8|&f Reloading..." to player
+		execute console command "skript reload {@skriptname}"
+		send "&3&lSkriptMinesLite &8|&f Successfully reloaded Version 1.0" to player
+every minute:
+	loop {SkriptMinesLite::*}:
+		set {_time} to {SkriptMinesLite::%loop-index%::lastreset}
+		if difference between {_time} and now >= {SkriptMinesLite::%loop-index%::timer}:
+			execute console command "sml reset %loop-value%"
+			set {SkriptMinesLite::%loop-index%::lastreset} to now
+on disconnect:
+	delete {SkriptMinesLite::%player's uuid%::pos1}
+	delete {SkriptMinesLite::%player's uuid%::pos2}
+on join:
+	delete {SkriptMinesLite::%player's uuid%::pos1}
+	delete {SkriptMinesLite::%player's uuid%::pos2}
