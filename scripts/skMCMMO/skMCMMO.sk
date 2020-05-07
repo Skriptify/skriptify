@@ -1,0 +1,162 @@
+#[----------------------]
+#SKRIPT MADE BY: HCFSkybridge
+#[----------------------]
+ 
+options:
+    maxrandomnumber: 25 #for the chance of getting mcmmo
+    superbreakercooldown: 20 #in minutes [YOU HAVE TO CHANGE THE MESSAGE IN BOTH "on rightclicks:"
+    bleedcooldown: 20 #in minutes [YOU HAVE TO CHANGE THE MESSAGE IN BOTH "on rightclicks:"
+    excavationchance: 0.1 #in percent, per level, chance to drop a diamond
+    herbalismchance: 0.1 #in percent, per level, chance to drop double drops
+    unarmedchance: 0.1 #in percent, per level, chance to drop victim's item on damage with fist
+    acrobaticschance: 0.1 #in percent, per level, chance to negate fall damage
+   
+on place:
+    set {owner::%event-block's location%} to player
+   
+on join:
+    if {mining::%player's uuid%} isn't set:
+        set {mining::%player's uuid%} to 0
+    if {swords::%player's uuid%} isn't set:
+        set {swords::%player's uuid%} to 0
+    if {herbalism::%player's uuid%} isn't set:
+        set {herbalism::%player's uuid%} to 0
+    if {acrobatics::%player's uuid%} isn't set:
+        set {acrobatics::%player's uuid%} to 0
+    if {excavation::%player's uuid%} isn't set:
+        set {excavation::%player's uuid%} to 0
+    if {unarmed::%player's uuid%} isn't set:
+        set {unarmed::%player's uuid%} to 0
+       
+on rightclick:
+    player's tool is wooden sword or stone sword or golden sword or iron sword or diamond sword:
+        set {_waited} to difference between {bleed::%player's uuid%::lastused} and now
+        if {_waited} is less than {@bleedcooldown}:
+            send "&cYou can only do this every 20 minutes!"
+        else:
+            set {bleed::%player's uuid%} to true
+            send "&cBleed Activated!"
+            set {bleed::%player's uuid%::lastused} to now
+               
+on rightclick:
+    player's tool is wooden pickaxe or stone pickaxe or golden pickaxe or iron pickaxe or diamond pickaxe:
+        set {_waited} to difference between {superbreaker::%player's uuid%::lastused} and now
+        if {_waited} is less than {@superbreakercooldown}:
+            send "&cYou can only do this every 20 &cminutes!"
+        else:
+            send "&bSuperbreaker Activated!"
+            set {_t} to player's tool
+            remove 1 of {_t} from player
+            give player 1 diamond pickaxe of efficiency 10 named "&bSuperBreaker Tool" with lore "Mining Skill Tool"
+            set {superbreaker::%player's uuid%::lastused} to now
+			wait 10 seconds
+			remove 1 diamond pickaxe of efficiency 10 named "&bSuperBreaker Tool" with lore "Mining Skill Tool" from player
+               
+on inventory click:
+    if lore of event-item contains "Mining Skill Tool":
+        cancel event
+       
+on drop:
+    if lore of player's tool contains "Mining Skill Tool":
+        cancel event
+       
+on damage:
+    victim is a player:
+        attacker is a player:
+            if {bleed::%attacker's uuid%} is true:
+                set {bleed::%attacker's uuid%} to false
+                apply wither 2 to victim for 10 seconds
+                send "&cYou are now bleeding!" to victim
+                send "&c%victim% &cis now bleeding!" to attacker
+ 
+command /stats [<offlineplayer>]:
+    trigger:
+        if arg-1 isn't set:
+            send "&e&l%arg-1%&e&l's STATS:"
+            send ""
+            send "&eMining: %{mining::%player's uuid%}%"
+            send "&eSwords: %{swords::%player's uuid%}%"
+            send "&eHerbalism: %{herbalism::%player's uuid%}%"
+            send "&eAcrobatics: %{acrobatics::%player's uuid%}%"
+            send "&eExcavation: %{excavation::%player's uuid%}%"
+            send "&eUnarmed: %{unarmed::%player's uuid%}%"
+        else:
+            send "&e&lSTATS:"
+            send ""
+            send "&eMining: %{mining::%arg-1's uuid%}%"
+            send "&eSwords: %{swords::%arg-1's uuid%}%"
+            send "&eHerbalism: %{herbalism::%arg-1's uuid%}%"
+            send "&eAcrobatics: %{acrobatics::%arg-1's uuid%}%"
+            send "&eExcavation: %{excavation::%arg-1's uuid%}%"
+            send "&eUnarmed: %{unarmed::%arg-1's uuid%}%"
+on break:
+    if player's tool is wooden pickaxe or stone pickaxe or iron pickaxe or gold pickaxe or diamond pickaxe:
+        if {owner::%event-block's location%} is set:
+            stop
+        else:
+            set {_m} to a random integer between 1 and {@maxrandomnumber}
+            if {_m} is 1:
+                add 1 to {mining::%player's uuid%}
+                send "&eYour Mining Level is now %{mining::%player's uuid%}%"
+ 
+on break:
+    if player's tool is wooden shovel or stone shovel or iron shovel or gold shovel or diamond shovel:
+        if {owner::%event-block's location%} is set:
+            stop
+        else:
+            set {_e} to a random integer between 1 and {@maxrandomnumber}
+            if {_e} is 1:
+                add 1 to {excavation::%player's uuid%}
+                send "&eYour Excavation Level is now %{excavation::%player's uuid%}%"
+            set {_chance} to {excavation::%player's uuid%} * {@excavationchance}
+            chance of {_chance}:
+                drop 1 diamond
+                       
+on break:
+    if event-block is sugar cane or fully grown wheat plant or fully grown potato plant or fully grown nether wart plant or cactus or pumpkin or melon or fully grown carrot plant:
+        if event-block is fully grown wheat plant or fully grown potato plant or fully grown nether wart plant or fully grown carrot plant:
+            set {_h} to a random integer between 1 and {@maxrandomnumber}
+            if {_h} is 1:
+                add 1 to {herbalism::%player's uuid%}
+                send "&eYour Herbalism Level is now %{herbalism::%player's uuid%}%"
+        set {_chance} to {herbalism::%player's uuid%} * {@herbalismchance}
+        chance of {_chance}:
+            drop 1 of event-block
+        else:
+            if {owner::%event-block's location%} is set:
+                stop
+            else:
+                set {_h} to a random integer between 1 and {@maxrandomnumber}
+                if {_h} is 1:
+                    add 1 to {herbalism::%player's uuid%}
+                    send "&eYour Herbalism Level is now %{herbalism::%player's uuid%}%"
+                       
+on damage:
+    victim is a player:
+        attacker is a player:
+            attacker's tool is air:
+                set {_u} to a random integer between 1 and {@maxrandomnumber}
+                if {_u} is 1:
+                    add 1 to {unarmed::%attacker's uuid%}
+                    send "&eYour Unarmed Level is now %{unarmed::%attacker's uuid%}%" to attacker
+                set {_chance} to {unarmed::%attacker's uuid%} * {@unarmedchance}
+                chance of {_chance}:
+                    drop victim's tool at victim
+                    remove 1 of victim's tool from victim
+            attacker's tool is wooden sword or stone sword or iron sword or gold sword or diamond sword:
+                set {_s} to a random integer between 1 and {@maxrandomnumber}
+                if {_s} is 1:
+                    add 1 to {swords::%attacker's uuid%}
+                    send "&eYour Swords Level is now %{swords::%attacker's uuid%}%" to attacker
+                   
+on damage:
+    victim is a player:
+        if damage was caused by fall:
+            set {_a} to a random integer between 1 and {@maxrandomnumber}
+            if {_a} is 1:
+                add 1 to {acrobatics::%victim's uuid%}
+                send "&eYour Acrobatics Level is now %{acrobatics::%victim's uuid%}%" to victim
+            set {_chance} to {acrobatics::%victim's uuid%} * {@acrobaticschance}
+            chance of {_chance}:
+                cancel event
+                send "&eYour Acrobatics negated that fall!" to victim
