@@ -1,0 +1,27 @@
+#		Simple Launch Pad Skript
+
+options:
+	launch_pad_block: slime block
+
+# true or false
+	require_elytra: true
+	require_permission: true
+
+	permission_node: easylaunch.use
+
+	forward_power: 1
+	vertical_power: 2
+
+
+on walk on {@launch_pad_block}:
+	if {@require_elytra} = true:
+		player's chestplate is not a elytra
+		send action bar "&8&l| &4You need to be wearing an elytra" to player
+		stop
+	if {@require_permission} = true:
+		player doesn't have permission "{@permission_node}"
+		send action bar "&8&l| &4You need the required permission node" to player
+		stop
+	push player upwards at speed {@vertical_power}
+	push player forwards at speed {@forward_power}
+	play sound "entity.slime.jump" with volume 10 to player
