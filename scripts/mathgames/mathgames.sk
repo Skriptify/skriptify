@@ -1,0 +1,37 @@
+options:
+	prefix: &8[&eNUMBERS&8]
+
+every 30 seconds:
+	num()
+
+function num(n: number = 0):
+	set {_1} to random integer between 1 and 10 # Change these numbers to make the questions harder.
+	set {_2} to random integer between 1 and 20 # Change "Integer" to "Number" if you want to allow decimals.
+	set {_x} to random integer between 1 and 3
+	set {pay} to random integer between 1 and 10 # Change these numbers to increase or decrease the amount you get for answering the question correctly.
+	{_x} is 1:
+		broadcast "{@prefix} &7Work out: &e%{_1}%x%{_2}% &7for &e%{pay}% Dollars!"
+		set {num} to 1
+		set {answer} to {_1}*{_2}
+		wait 10 seconds
+		delete {num}
+	{_x} is 2:
+		broadcast "{@prefix} &7Work out: &e%{_1}%+%{_2}% &7for &e%{pay}% Dollars!"
+		set {num} to 1
+		set {answer} to {_1}+{_2}
+		wait 10 seconds
+		delete {num}
+	{_x} is 3:
+		broadcast "{@prefix} &7Work out: &e%{_1}%÷%{_2}% &7for &e%{pay}% Dollars!"
+		set {num} to 1
+		set {answer} to {_1}/{_2}
+		wait 10 seconds
+		delete {num}
+
+on chat:
+	{num} is set:
+		if message contains "%{answer}%":
+			cancel event
+			broadcast "{@prefix} &e%player's display name%&7 was correct! &8(&6%{answer}%&8)"
+			delete {answer}
+			add {pay} to player's balance
