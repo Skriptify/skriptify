@@ -1,0 +1,68 @@
+command /kit [<text>]:
+    trigger:
+        if arg 1 is not set:
+            open virtual chest inventory with size 3 named "Kits" to player 
+            loop (3*9) times:
+                format gui slot (loop-number - 1) of player with black stained glass pane named "&r"
+            format gui slot 10 of player with iron sword named "&ePvP" to run:
+                player command "kit pvp"
+            format gui slot 12 of player with bow named "&eArcher" to run:
+                player command "kit archer"
+            format gui slot 14 of player with leather helmet named "&eNinja" to run:
+                player command "kit ninja"
+            format gui slot 16 of player with diamond chestplate named "&eTank" to run:
+                player command "kit tank"
+        else:
+            close player's inventory
+            if arg-1 is "pvp":
+                remove speed from player                                                                                                                                                                                        
+                remove slowness from player                                                                                                                                                                                            
+                clear player's inventory                                                                                                                                                                                                                            
+                give iron sword to player
+                give iron helmet to player
+                give iron chestplate to player
+                give iron leggings to player
+                give iron boots to player
+                give 64 steak to player                                                                                                                                                                                                                                     
+                give 4 golden apple to player
+                send "&6&lBRIGHTER > &7You have been given kit &ePvP &8(&eMade by &6CalvishDad&8)" to player
+            else if arg-1 is "archer":                                                                                                                                                                                                                                                                                                                                           
+                remove speed from player                                                                                                                                                                                        
+                remove slowness from player                                                                                                                                                                                            
+                clear player's inventory                                                                                                                                                                                                                                 
+                give stone sword to player                                                                                                                                                                                                                                 
+                give leather helmet to player
+                give leather chestplate to player
+                give leather leggings to player
+                give boots to player
+                give 64 steak to player
+                give bow to player
+                give 64 arrow to player
+                message "&6&lBRIGHTER > &7You have been given kit &eArcher &8(&eMade by &6CalvishDad&8)" to player
+            else if arg-1 is "ninja":
+                remove speed from player                                                                                                                                                                                        
+                remove slowness from player
+                apply potion of speed of tier 1 to player for 9999 seconds
+                clear player's inventory
+                give iron sword to player
+                give leather cap to player
+                give leather tunic to player
+                give leather pants to player
+                give leather boots to player
+                give 64 steak to player
+                give 2 golden apple to player
+                message "&6&lBRIGHTER > &7You have been given kit &eNinja &8(&eMade by &6CalvishDad&8)" to player                                                                                             
+            else if arg-1 is "tank":
+                remove speed from player
+                remove slowness from player
+                apply potion of slowness of tier 1 to player for 9999 seconds
+                clear player's inventory
+                give stone sword to player
+                give diamond helmet to player
+                give diamond chestplate to player
+                give diamond leggings to player
+                give diamond boots to player
+                give 64 steak to player
+                message "&6&lBRIGHTER > &7You have been given kit &eTank &8(&eMade by &6CalvishDad&8)" to player
+            else:
+                message "&cInvalid kit."
