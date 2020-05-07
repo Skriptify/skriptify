@@ -1,0 +1,377 @@
+#SuperChat skripted by: SH4D03
+#DM SH4D03#7511 on discord if you find any bugs
+#All options below are configurable
+#Available commands: /prefix /suffix /nickname /chat /bannedwords /chatcolor
+
+
+options:
+
+#Msges:
+	prefix: &6&lSuperChat &8|&7
+	player-muted-msg: &cYou are currently muted! 
+	server-muted-msg: &cChat is currently muted!
+	banned-word-msg: &cYour message contained a banned word!
+	nick-not-allowed: &cThis nick is not allowed!
+	prefix-not-allowed: &cThis prefix is not allowed!
+	suffix-not-allowed: &cThis suffix is not allowed!
+	nick-changed: &aSuccessfully changed nickname to: [nick] #Use [nick] to display the nickname
+	prefix-changed: &aSuccessfully changed prefix to: [prefix] #Use [prefix] to display the nickname
+	suffix-changed: &aSuccessfully changed suffix to: [suffix] #Use [suffix] to display the nickname
+	duped-msg: &cYou are not allowed to repeat the same msg twice!
+
+#Perms:
+	chatcolor-perm: chatcolor.change
+	nick-perm: nick.change
+	color-nick-perm: colornick.change
+	prefix-perm: prefix.change
+	color-prefix-perm: colorprefix.change
+	suffix-perm: suffix.change
+	color-suffix-perm: colorsuffix.change
+	emojis-perm: emojis.use
+	banned-words-add: banned.add
+	moderatorperm: chat.moderate
+
+#Options:
+	ping: &a[player]  #Use [player] to display the player who has been pinged
+	default-chatcolor: &7
+	chatformat: [prefix]&e[player][suffix] &6» [message]  #Use [prefix], [suffix], [player] and [message] 
+	join-msg: &7(&a+&7) [player] #Use [player] to display the player
+	leave-msg: &7(&c-&7) [player] #Use [player] to display the player
+	duped-chat: false #Allows a player to say the same message twice in a row
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#CODE
+#DO NOT edit if you do not know what you are doing
+
+
+on chat:
+	if {muted::%player's uuid%} is set:
+		cancel event
+		send "{@player-muted-msg}" to player
+		stop
+	else if {server-mute} is set:
+		cancel event
+		send "{@server-muted-msg}" to player
+		stop
+	else if {@duped-chat} is false:
+		if {last-msg::%player's uuid%} = message:
+			cancel event
+			send "{@duped-msg}" to player
+			stop
+	
+	set {last-msg::%player's uuid%} to message
+	set {_words::*} to message split at " "
+	loop {_words::*}:
+		set {_word} to loop-value
+		replace all " " in {_word} with " "
+		if {banned-words::*} contains {_word}:
+			cancel event
+			send "{@prefix} {@banned-word-msg}" to player
+			stop
+	if {prefix::%player's uuid%} is set:
+		set {_prefix} to "%{prefix::%player's uuid%}% "
+	else:
+		set {_prefix} to ""
+	if {nickname::%player's uuid%} is set:
+		set {_name} to {nickname::%player's uuid%}
+	else:
+		set {_name} to "&r%player%"
+	if {suffix::%player's uuid%} is set:
+		set {_suffix} to " &r%{suffix::%player's uuid%}%"
+	else:
+		set {_suffix} to ""
+	if player has permission "{@emojis-perm}":
+		replace all "<3" in message with "&r&d❤%{chat-color::%player's uuid%}%"
+		replace all ":)" or "(:" in message with "&r&a☺%{chat-color::%player's uuid%}%"
+		replace all ":(" or "):" in message with "&r&c☹%{chat-color::%player's uuid%}%"
+		replace all ";)" in message with "&r&a-‿◕&7%{chat-color::%player's uuid%}%"
+	loop all players where [message contains "%input%"]:
+		set {_ping} to "{@ping}"
+		replace all "[player]" in {_ping} with "%loop-player%"
+		set {_ping} to "%{_ping}%%{chat-color::%player's uuid%}%"
+		replace all "%loop-player%" with {_ping} in message
+		play sound "entity.experience_orb.pickup" with volume 2 and pitch 16 to loop-player
+	set {_chat} to "{@chatformat}"
+	replace all "[prefix]" in {_chat} with {_prefix}
+	replace all "[player]" in {_chat} with {_name}
+	replace all "[suffix]" in {_chat} with {_suffix}
+	replace all "[message]" in {_chat} with "%{chat-color::%player's uuid%}%%message%"
+	set the chat format to {_chat}
+				
+		
+
+on join:
+	set {_join} to "{@join-msg}"
+	replace all "[player]" in {_join} with "%player%"
+	set the join message to {_join}
+	if {chat-color::%player's uuid%} is not set:
+		set {chat-color::%player's uuid%} to "{@default-chatcolor}"
+
+on disconnect:
+	set {_leave} to "{@leave-msg}"
+	replace all "[player]" in {_leave} with "%player%"
+	set the leave message to {_leave}
+
+
+command /nickname [<text>] [<player>]:
+	permission: {@nick-perm}
+	aliases: /nick
+	trigger:
+		if arg-1 is set:
+			set {_player} to player's uuid
+			if arg-2 is set:
+				if player is op:
+					set {_player} to arg-2's uuid
+			if arg-1 is "reset":
+				delete {nickname::%{_player}%}
+				send "{@prefix} Nickname reset!" to player
+				stop
+			else if {banned-words::*} contains uncolored arg-1:
+				send "{@nick-not-allowed}" to player
+				stop
+			else if player has permission "{@color-nick-perm}":
+				set {nickname::%{_player}%} to colored arg-1
+				set {_nick} to "{@nick-changed}"
+				replace all "[nick]" in {_nick} with {nickname::%{_player}%}
+				send {_nick} to player
+			else:
+				set {nickname::%{_player}%} to uncolored arg-1
+				set {_nick} to "{@nick-changed}"
+				replace all "[nick]" in {_nick} with {nickname::%{_player}%}
+				send {_nick} to player
+
+command /prefix [<text>] [<player>]:
+	permission: {@prefix-perm}
+	trigger:
+		if arg-1 is set:
+			set {_player} to player's uuid
+			if arg-2 is set:
+				if player is op:
+					set {_player} to arg-2's uuid
+			if arg-1 is "reset":
+				delete {prefix::%{_player}%}
+				send "{@prefix} Prefix reset!" to player
+				stop
+			else if {banned-words::*} contains uncolored arg-1:
+				send "{@prefix-not-allowed}" to player
+				stop
+			else if player has permission "{@color-prefix-perm}":
+				set {prefix::%{_player}%} to colored arg-1
+				set {_msg} to "{@prefix-changed}"
+				replace all "[prefix]" in {_msg} with {prefix::%{_player}%}
+				send {_msg} to player
+			else:
+				set {prefix::%{_player}%} to uncolored arg-1
+				set {_msg} to "{@prefix-changed}"
+				replace all "[prefix]" in {_msg} with {prefix::%{_player}%}
+				send {_msg} to player
+
+command /suffix [<text>] [<player>]:
+	permission: {@suffix-perm}
+	trigger:
+		if arg-1 is set:
+			set {_player} to player's uuid
+			if arg-2 is set:
+				if player is op:
+					set {_player} to arg-2's uuid
+			if arg-1 is "reset":
+				delete {suffix::%{_player}%}
+				send "{@prefix} Suffix reset!" to player
+				stop
+			else if {banned-words::*} contains uncolored arg-1:
+				send "{@suffix-not-allowed}" to player
+				stop
+			else if player has permission "{@color-suffix-perm}":
+				set {suffix::%{_player}%} to colored arg-1
+				set {_msg} to "{@suffix-changed}"
+				replace all "[suffix]" in {_msg} with {suffix::%{_player}%}
+				send {_msg} to player
+			else:
+				set {suffix::%{_player}%} to uncolored arg-1
+				set {_msg} to "{@suffix-changed}"
+				replace all "[suffix]" in {_msg} with {suffix::%{_player}%}
+				send {_msg} to player
+
+command /bannedwords [<text>] [<text>]:
+	permission: {@banned-words-add}
+	trigger:
+		if arg-1 is "add":
+			if arg-2 is set:
+				if {banned-words::*} contains arg-2:
+					send "{@prefix} This word is already banned!" to player
+				else:
+					add arg-2 to {banned-words::*}
+					send "{@prefix} This word has been successfully banned!" to player
+			else:
+				send "{@prefix} Usage: /bannedwords add <word>" to player
+		else if arg-1 is "remove":
+			if arg-2 is set:
+				if {banned-words::*} does not contain arg-2:
+					send "{@prefix} This word is not banned!" to player
+				else:
+					remove arg-2 from {banned-words::*}
+					send "{@prefix} This word has been successfully unbanned!" to player
+			else:
+				send "{@prefix} Usage: /bannedwords remove <word>" to player
+		else if arg-1 is "list":
+			send "&3&lBanned Words:" to player
+			loop {banned-words::*}:
+				send "&9[&b%loop-index%&9] &3%loop-value%" to player
+		else:
+			send "{@prefix} Usage: %newline% &7/bannedwords add <word> %newline% &7/bannedwords remove <word> %newline% &7/bannedwords list" to player
+
+command /chat [<text>] [<text>]:
+	permission: {@moderatorperm}
+	trigger:
+		if arg-1 is "clear":
+			loop 100 times:
+				broadcast " "
+			broadcast "{@prefix} Chat was cleared by: &5&l%player%"
+		else if arg-1 is "mute":
+			if arg-2 is not set:
+				if {server-mute} is set:
+					delete {server-mute}
+					broadcast "{@prefix} Chat was unmuted by: &5&l%player%"
+				else:
+					set {server-mute} to true
+					broadcast "{@prefix} Chat was muted by: &5&l%player%"
+			else:
+				set {_player} to arg-2 parsed as offline player
+				set {_uuid} to {_player}'s uuid
+				if {muted::%{_uuid}%} is set:
+					delete {muted::%{_uuid}%}
+					broadcast "{@prefix} %{_player}% was unmuted by: &5&l%player%"
+				else:
+					set {muted::%{_uuid}%} to true
+					broadcast "{@prefix} %{_player}% was muted by: &5&l%player%"
+		else:
+			send "{@prefix} Usage: %newline% &7/chat clear %newline% &7/chat mute %newline% &7/chat mute [<player>]" to player
+			
+
+
+command /chatcolor:
+	permission: {@chatcolor-perm}
+	trigger:
+		set {_inventory} to chest inventory with 2 rows named "&3&lChatColor"
+		set slot 0 of {_inventory} to paper named "&0&lBlack" with lore "" and "&7Example: &0Hello!"
+		set slot 1 of {_inventory} to paper named "&1&lDark Blue" with lore "" and "&7Example: &1Hello!"
+		set slot 2 of {_inventory} to paper named "&2&lDark Green" with lore "" and "&7Example: &2Hello!"
+		set slot 3 of {_inventory} to paper named "&3&lDark Aqua" with lore "" and "&7Example: &3Hello!"
+		set slot 4 of {_inventory} to paper named "&4&lDark Red" with lore "" and "&7Example: &4Hello!" 
+		set slot 5 of {_inventory} to paper named "&5&lDark Purple" with lore "" and "&7Example: &5Hello!"
+		set slot 6 of {_inventory} to paper named "&6&lGold" with lore "" and "&7Example: &6Hello!"
+		set slot 7 of {_inventory} to paper named "&7&lGray" with lore "" and "&7Example: &7Hello!"
+		set slot 8 of {_inventory} to paper named "&8&lDark Gray" with lore "" and "&7Example: &8Hello!"
+		set slot 9 of {_inventory} to paper named "&9&lBlue" with lore "" and "&7Example: &9Hello!" 
+		set slot 10 of {_inventory} to paper named "&a&lGreen" with lore "" and "&7Example: &aHello!"
+		set slot 11 of {_inventory} to paper named "&b&lAqua" with lore "" and "&7Example: &bHello!"
+		set slot 12 of {_inventory} to paper named "&c&lRed" with lore "" and "&7Example: &cHello!"
+		set slot 13 of {_inventory} to paper named "&d&lPink" with lore "" and "&7Example: &dHello!" 
+		set slot 14 of {_inventory} to paper named "&e&lYellow" with lore "" and "&7Example: &eHello!" 
+		set slot 15 of {_inventory} to paper named "&f&lWhite" with lore "" and "&7Example: &fHello!"
+		set slot 17 of {_inventory} to barrier named "&c&lCancel" with lore "" and "&7Click to cancel!" 
+		open {_inventory} to player
+
+on inventory click:
+	if event-inventory is not player's inventory:
+		if event-slot is paper named "&0&lBlack" with lore "" and "&7Example: &0Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&0"
+			send "{@prefix} You changed your chat color to: &0&lBlack" to player
+		else if event-slot is paper named "&1&lDark Blue" with lore "" and "&7Example: &1Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&1"
+			send "{@prefix} You changed your chat color to: &1&lDark Blue" to player
+		else if event-slot is paper named "&2&lDark Green" with lore "" and "&7Example: &2Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&2"
+			send "{@prefix} You changed your chat color to: &2&lDark Green" to player
+		else if event-slot is paper named "&3&lDark Aqua" with lore "" and "&7Example: &3Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&3"
+			send "{@prefix} You changed your chat color to: &3&lDark Aqua" to player
+		else if event-slot is paper named "&4&lDark Red" with lore "" and "&7Example: &4Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&4"
+			send "{@prefix} You changed your chat color to: &4&lDark Red" to player
+		else if event-slot is paper named "&5&lDark Purple" with lore "" and "&7Example: &5Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&5"
+			send "{@prefix} You changed your chat color to: &5&lDark Purple" to player
+		else if event-slot is paper named "&6&lGold" with lore "" and "&7Example: &6Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&6"
+			send "{@prefix} You changed your chat color to: &6&lGold" to player
+		else if event-slot is paper named "&7&lGray" with lore "" and "&7Example: &7Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&7"
+			send "{@prefix} You changed your chat color to: &7&lGray" to player
+		else if event-slot is paper named "&8&lDark Gray" with lore "" and "&7Example: &8Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&8"
+			send "{@prefix} You changed your chat color to: &8&lDark Gray" to player
+		else if event-slot is paper named "&9&lBlue" with lore "" and "&7Example: &9Hello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&9"
+			send "{@prefix} You changed your chat color to: &9&lBlue" to player
+		else if event-slot is paper named "&a&lGreen" with lore "" and "&7Example: &aHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&a"
+			send "{@prefix} You changed your chat color to: &a&lGreen" to player
+		else if event-slot is paper named "&b&lAqua" with lore "" and "&7Example: &bHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&b"
+			send "{@prefix} You changed your chat color to: &b&lAqua" to player
+		else if event-slot is paper named "&c&lRed" with lore "" and "&7Example: &cHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&c"
+			send "{@prefix} You changed your chat color to: &c&lRed" to player
+		else if event-slot is paper named "&d&lPink" with lore "" and "&7Example: &dHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&d"
+			send "{@prefix} You changed your chat color to: &d&lPink" to player
+		else if event-slot is paper named "&e&lYellow" with lore "" and "&7Example: &eHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&e"
+			send "{@prefix} You changed your chat color to: &e&lYellow" to player
+		else if event-slot is paper named "&f&lWhite" with lore "" and "&7Example: &fHello!":
+			cancel event
+			set {chat-color::%player's uuid%} to "&f"
+			send "{@prefix} You changed your chat color to: &f&lWhite" to player
+		else if event-slot is barrier named "&c&lCancel" with lore "" and "&7Click to cancel!":
+			cancel event
+			close inventory of player
