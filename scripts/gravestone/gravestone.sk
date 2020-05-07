@@ -1,0 +1,16 @@
+#
+#
+# Report any issues to @Adxm#1343
+#
+#
+
+on script load:
+  console command "gamerule keepInventory true"
+
+on death:
+  victim is player
+  send "&c&lDEATH &7| You can retreive your items at location &3%vicitm's location%&7!"
+  set block at victim's location to chest
+  loop all items in victim's inventory:
+    add loop-item to inventory of block at victim's location
+  clear victim's inventory
