@@ -1,0 +1,25 @@
+options:
+    p: skript.admin                                 # Permission required for the command
+    pm: &cYou don't have access to that command.    # Message sent if player's permission is insufficient
+    failed: &cPlayer is offline.                    # Message sent if arg-1 is offline
+
+
+command /openinv [<offlineplayer>]:
+    permission: {@p}
+    permission message: {@pm}
+    trigger:
+        set {_p} to arg 1 ? player
+        if {_p} is offline:
+            send "{@failed}"
+        else:
+            open {_p}'s inventory for player
+
+command /openender [<offlineplayer>]:
+    permission: {@p}
+    permission message: {@pm}
+    trigger:
+        set {_p} to arg 1 ? player
+        if {_p} is offline:
+            send "{@failed}"
+        else:
+            open ender chest of {_p} to player
