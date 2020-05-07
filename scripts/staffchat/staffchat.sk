@@ -1,0 +1,55 @@
+# CONFIG
+
+options:
+	# VVV This is the format for staff chat, here are what the placeholders do:
+	# [PREFIX]: The prefix of the player
+	# [PLAYER]: The player's name
+	# [SUFFIX]: The suffix of the player
+	# [MESSAGE]: The player's message
+	staffchatformat: &cStaff Chat &6» &c[PREFIX] [PLAYER] [SUFFIX]&6: &f[MESSAGE]
+	prefix: &7[&3SC&7]
+	permission: staff.sc
+	noperm: &cYou do not have permission to use this!
+	# The option "scs" is what you can put at the start of your message to send it in staff chat.
+	# Let's say the scs was set to "$", if you had the permission to use staffchat and typed "$ hi", it would send "hi" in staffchat!
+	scs: $
+	scdisable: You have disabled staff chat!
+	scenable: You have enabled staff chat!
+	usage: &c/sc [text]
+	command: /sc
+	alias: /staffchat
+
+# END OF CONFIG, DO NOT TOUCH ANYTHING AFTER THIS UNLESS YOU KNOW WHAT YOU ARE DOING!
+
+function stfChat(p: player, m: text):
+	set {_t} to "{@staffchatformat}"
+	replace all "[PREFIX]" in {_t} with {_p}'s prefix
+	replace all "[PLAYER]" in {_t} with "%{_p}%"
+	replace all "[SUFFIX]" in {_t} with suffix of {_p}
+	replace all "[MESSAGE]" in {_t} with {_m}
+	send {_t} to all players where [input has permission "{@permission}"]
+
+chat:
+	if {staffchat::*} contains player:
+		cancel event
+		stfChat(player, message)
+	else:
+		if message starts with "{@scs} ":
+			if player has permission "{@permission}":
+				cancel event
+				stfChat(player, last (length of message - 2) characters of message)
+
+command {@command} [<text>]:
+	permission: {@permission}
+	permission message: {@noperm}
+	usage: {@usage}
+	aliases: {@alias}
+	trigger:
+		stfChat(player, arg-text) if arg-text is set
+		if arg-text isn't set:
+			if {staffchat::*} contains player:
+				remove player from {staffchat::*}
+				send "{@prefix} {@scdisable}"
+			else:
+				add player to {staffchat::*}
+				send "{@prefix} {@scenable}"
