@@ -1,0 +1,53 @@
+#Chairs+ skripted by: SH4D03
+#Donations: paypal.me/SH4D03
+
+
+#Leave any lore as %{_none}% to make it blank
+options:
+	item: tripwire hook #This is the chair token item
+	name: &b&lChair Token #This is the name of the chair token
+	lore1: &7Right click on a block #This is the first line of lore of the chair token
+	lore2: &7to turn it into a chair! #This is the second line of lore of the chair token
+	lore3: %{_none}% #This is the third line of lore of the chair token 
+	lore4: &cDisclaimer: &7Each token can only be used once #This is the fourth line of lore of the chair token
+
+
+
+
+
+
+
+
+
+
+on right click with {@item}:
+	if name of player's tool is "{@name}":
+		cancel event
+		remove 1 of player's tool from player's tool
+		add location of clicked block to {chair::*}
+
+on break:
+	if {chair::*} contains location of event-block:
+		remove location of event-block from {chair::*}
+
+on right click:
+	if {chair::*} contains location of clicked block:
+		chair(player, location of clicked block)
+
+command /chair [<player=%player%>] [<integer=1>]:
+	trigger:
+		set {_none} to ""
+		give arg-2 of {@item} named "{@name}" with lore "{@lore1}", "{@lore2}", "{@lore3}" and "{@lore4}" to arg-1
+
+function chair(p: player, b: location):
+	spawn armor stand at location of block below block at {_b}
+	set {_entity} to last spawned armor stand
+	add "{Invisible:1}" to nbt of last spawned armor stand
+	add "{NoGravity:1}" to nbt of last spawned armor stand
+	make {_p} ride {_entity}
+	while {_entity} exists:
+		if {_p} is sneaking:
+			eject any passenger of {_entity}
+			wait 2 ticks
+			kill {_entity}
+		wait 5 tick
