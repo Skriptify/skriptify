@@ -1,0 +1,104 @@
+options:
+
+  spawn-with-selector: true   # Give player's the world selector on join.
+
+  selector-item: nether star   # Item to act as the world selector (above must be 'true')
+
+  gui-rows: 1 # How many rows the /world GUI uses.
+
+  logs: true # Decide whether to log player's movements using the WorldGUI.
+
+
+
+
+  P: &7[&cWorld&lGUI&7] # PREFIX - DO NOT EDIT
+
+
+on script load:
+  if {wgui::worlds::*} is not set:
+    add "" to {wgui::worlds::*}
+
+on join:
+  if {@spawn-with-selector} is true:
+    give player 1 {@selector-item} named "{@P} World Selector"
+
+on click holding {@selector-item}:
+  player command "world"
+
+command /world:
+  permission: worldgui.use
+  trigger:
+    remove "" from {wgui::worlds::*}
+    open chest with {@gui-rows} rows named "Select a world to join." to player
+    set {_slot} to 0
+    loop {wgui::worlds::*}:
+      set slot {_slot} of player's current inventory to {wgui::icon::world::%loop-value%} named "%loop-value%" with lore "&7MOTD: &e%{wgui::motd::world::%loop-value%}%" and "&7Click to join world &3%loop-value%&7."
+      add 1 to {_slot}
+    add "" to {wgui::worlds::*}
+
+on inventory click:
+  if inventory name of player's current inventory is "Select a world to join.":
+    if name of clicked item is set:
+      console command "mvtp %player% %name of clicked item%"
+      send "{@P} Sending you to world &3%name of clicked item%&7."
+      if {@logs} is true:
+        log "%player% has teleported to world %name of clicked item% (%time%)" to "worldgui.log"
+
+command /worldgui:
+  aliases: wgui
+  permission: worldgui.admin
+  trigger:
+    open chest with 1 rows named "Please select an option." to player
+    set slot 2 of player's current inventory to green stained glass pane named "&a&nAdd&a a world" with lore "&7Add a world to the World GUI!"
+    set slot 6 of player's current inventory to red stained glass pane named "&c&nRemove&c a world" with lore "&7Remove a world from the World GUI!"
+
+on inventory click:
+  if inventory name of player's current inventory is "Please select an option.":
+    cancel event
+    if clicked slot is 2:
+      open chest with 5 rows named "Please select a world to &a&nadd&7." to player
+      set {_slot} to 0
+      loop all worlds:
+        if {wgui::worlds::*} does not contain loop-value:
+          set slot {_slot} of player's current inventory to grass block named "%loop-value%" with lore "&7Click to &a&nadd&7 world &3%loop-value%&7 to the World GUI."
+          add 1 to {_slot}
+    else if clicked slot is 6:
+      open chest with 5 rows named "Please select a world to &c&nremove&7." to player
+      set {_slot} to 0
+      remove "" from {wgui::worlds::*}
+      loop {wgui::worlds::*}:
+        set slot {_slot} of player's current inventory to {wgui::icon::world::%loop-value%} named "%loop-value%" with lore "&7Click to &c&nremove&7 world &3%loop-value%&7 to the World GUI."
+        add 1 to {_slot}
+      add "" to {wgui::worlds::*}
+  if inventory name of player's current inventory is "Please select a world to &a&nadd&7.":
+    cancel event
+    if name of clicked item is set:
+      add name of clicked item to {wgui::worlds::*}
+      send "{@P} &3%name of clicked item%&7 has been added to the World GUI!"
+      send ""
+      send "{@P} INFORMATION NEEDED"
+      send ""
+      send "&7> &7Please enter in chat the &3&licon&7 for world &3%name of clicked item%&7."
+      set {wgui::icon::%player's uuid%} to name of clicked item
+      close player's inventory
+  if inventory name of player's current inventory is "Please select a world to &c&nremove&7.":
+    cancel event
+    if name of clicked item is set:
+      remove name of clicked item from {wgui::worlds::*}
+      send "{@P} &3%name of clicked item%&7 has been removed from the World GUI!"
+      player command "/wgui"
+
+on chat:
+  if {wgui::icon::%player's uuid%} is set:
+    cancel event
+    set {wgui::icon::world::%{wgui::icon::%player's uuid%}%} to message parsed as material
+    send "%{wgui::icon::world::%{wgui::icon::%player's uuid%}%}%"
+    send "{@P} Complete! &3%{wgui::icon::%player's uuid%}%&7's icon has been set to &3%message%&7! &7&o(Please not if you entered something incorrectly, you will need to remove the world from the GUI, then re-do these steps!)"
+    set {wgui::motd::%player's uuid%} to {wgui::icon::%player's uuid%}
+    send "{@P} Now enter the &3&lMOTD&7 for &3%{wgui::icon::%player's uuid%}%&7."
+    delete {wgui::icon::%player's uuid%}
+  else if {wgui::motd::%player's uuid%} is set:
+    cancel event
+    set {wgui::motd::world::%{wgui::motd::%player's uuid%}%} to message
+    send "{@P} Setup complete! &3%{wgui::motd::%player's uuid%}%&7's MOTD has been set to &3%message%&7!"
+    delete {wgui::motd::%player's uuid%}
