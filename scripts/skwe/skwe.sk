@@ -1,0 +1,156 @@
+# Author: Ofus-Will#4688
+
+# config
+
+options:
+
+    # the item used for selecting positions
+    skwe-wand: golden axe named "&6WorldEdit Wand"
+
+    # the permission used for all skwe related commands
+    permission: skwe.use
+    permission-message: &cPermission denied!
+
+# code
+
+function fillArea(p: player, loc1: location, loc2: location, blocks: text):
+    set {_x} to -1 if x coord of {_loc1} > x coord of {_loc2} else 1
+    set {_y} to -1 if y coord of {_loc1} > y coord of {_loc2} else 1
+    set {_z} to -1 if z coord of {_loc1} > z coord of {_loc2} else 1
+    set {_base} to {_loc1}
+    set {_u} to uuid of {_p}
+    set {_prior} to now
+
+    # multiblocks with percentages
+    if {_blocks} contains "%%":
+        set {_percentages} to true
+        loop {_blocks} split by ",":
+            set {_args::*} to loop-value split by "%%"
+            set {_block} to {_args::2} parsed as item
+            if {_block} is set:
+                set {_chance} to {_args::1} parsed as int
+                if {_chance} is set:
+                    add {_block} to {_elements::*}
+                    set {_chance::%{_block}%} to {_chance}
+                    add {_chance} to {_total}
+                else:
+                    send "&cInvalid percentage format" to {_p}
+            else:
+                send "&cOne or more of your block types were invalid" to {_p}
+                stop
+        if {_total} != 100:
+            send "&cYour chances must add up to 100%%" to {_p}
+            stop
+
+    # multiblocks
+    else if {_blocks} contains ",":
+        set {_list} to true
+        loop {_blocks} split by ",":
+            set {_block} to loop-value parsed as item
+            if {_block} is set:
+                add loop-value parsed as item to {_elements::*}
+            else:
+                send "&cOne or more of your block types were invalid" to {_p}
+
+    # single block
+    else:
+        set {_block} to {_blocks} parsed as item
+        if {_block} is not set:
+            send "&cBlock type invalid" to {_p}
+            stop
+
+    loop abs(x coord of {_loc1} - x coord of {_loc2}) + 1 times:
+        loop abs(z coord of {_loc1} - z coord of {_loc2}) + 1 times:
+            loop abs(y coord of {_loc1} - y coord of {_loc2}) + 1 times:
+                add 1 to {_placed}
+
+                set {undo::%{_u}%::%{_loc1}%} to "%block at {_loc1}%"
+
+                # multiblocks with percentages
+                if {_percentages} is set:
+                    delete {_total}
+                    set {_n} to random integer between 1 and 100
+                    loop {_elements::*}:
+                        if {_n} is between ({_total} + 1) and ({_total} + {_chance::%loop-value-4%}):
+                            set block at {_loc1} to loop-value-4
+                            exit 1 loop
+                        add {_chance::%loop-value-4%} to {_total}
+
+                # multiblocks
+                else if {_list} is set:
+                    set {_block} to random element out of {_elements::*}
+                    set block at {_loc1} to {_block}
+
+                # single block
+                else:
+                    set block at {_loc1} to {_block}
+
+                add {_y} to y coord of {_loc1}
+            add {_z} to z coord of {_loc1}
+            set y coord of {_loc1} to y coord of {_base}
+        add {_x} to x coord of {_loc1}
+        set z coord of {_loc1} to z coord of {_base}
+
+    send formatted "&d%{_placed}% blocks set in %difference between now and {_prior}%" to {_p}
+        
+command //undo:
+    permission: {@permission}
+    permission message: {@permission-message}
+    trigger:
+        if {undo::%player's uuid%::*} is set:
+            loop {undo::%player's uuid%::*}:
+                set {_args::*} to loop-index split by ":"
+                set {_world} to {_args::1}
+                set {_coords::*} to {_args::2} split by ","
+                set {_loc} to location at ({_coords::1} parsed as num), ({_coords::2} parsed as num), ({_coords::3} parsed as num) in {_world}
+                set block at {_loc} to loop-value parsed as item
+            send "&dYou have undone your last edit"
+            delete {undo::%player's uuid%::*}
+        else:
+            send "&cYou do not have any edits to undo!"
+
+command //set [<text>]:
+    permission: {@permission}
+    permission message: {@permission-message}
+    trigger:
+        # reusability
+        set {_one} to metadata "skwe-pos-one" of player
+        set {_two} to metadata "skwe-pos-two" of player
+
+        if {_one} is set:
+            if {_two} is set:
+                fillArea(player, {_one}, {_two}, arg-1)
+            else:
+                send formatted "&cYour second skwe position is not set!"
+        else:
+            send formatted "&cYour first skwe position is not set!"
+
+command //wand:
+    permission: {@permission}
+    permission message: {@permission-message}
+    trigger:
+        give player {@skwe-wand}
+
+command //cut:
+    trigger:
+        execute player command "//set air"
+
+on right click:
+    event-block is set
+    if player's tool = {@skwe-wand}:
+        if player has permission "{@permission}":
+            cancel event
+            set metadata "skwe-pos-one" of player to location of event-block
+            send formatted "&dPosition one set to %location of event-block%"
+        else:
+            send "{@permission-message}"
+
+on left click:
+    event-block is set
+    if player's tool = {@skwe-wand}:
+        if player has permission "{@permission}":
+            cancel event
+            set metadata "skwe-pos-two" of player to location of event-block
+            send formatted "&dPosition two set to %location of event-block%"
+        else:
+            send "{@permission-message}"
