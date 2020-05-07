@@ -1,0 +1,84 @@
+#
+#
+# 
+# By Adxm#1343
+#
+#
+#
+
+options:
+	P: &3&l[REPORT]&7
+	S: &a&lSUCCESS&7
+	E: &c&lERROR&7
+on script load:
+	broadcast "{@P} Successfully &3reloaded&7."
+	if {reports::total} is not set:
+		set {reports::total} to 0
+	if {reports::bug::total} is not set:
+		set {reports::bug::total} to 0
+	if {reports::player::total} is not set:
+		set {reports::player::total} to 0
+	if {reports::other::total} is not set:
+		set {reports::other::total} to 0
+	if {latest::reload} is not set:
+		set {latest::reload} to 0
+	if {latest::reload::player} is not set:
+		set {latest::reload::player} to "N/A"
+command /report [<text>] [<text>]:
+	aliases: reports
+	trigger:
+		if arg-1 is "bug":
+			if arg-2 is set:
+				log "[BUG] %player% has reported the bug: ""%arg-2%""" to "reportsbug.log"
+				send "{@S} Successfully reported."
+				alertReport(player, arg-1, arg-2)
+				setLatest(player, arg-1, arg-2)
+			else:
+				send "{@E} Enter &3argument-2"
+		else if arg-1 is "player":
+			if arg-2 is set:
+				log "[PLAYER] %player% has reported the player: ""%arg-2%""" to "reportsplayer.log" 
+				send "{@S} Successfully reported."
+				alertReport(player, arg-1, arg-2)
+				setLatest(player, arg-1, arg-2)
+			else:
+				send "{@E} Enter &3argument-2"
+		else if arg-1 is "other":
+			if arg-2 is set:
+				log "[BUG] %player% has reported other: ""%arg-2%""" to "reportsother.log" 
+				send "{@S} Successfully reported."
+				alertReport(player, arg-1, arg-2)
+				setLatest(player, arg-1, arg-2)
+			else:
+				send "{@E} Enter &3argument-2."
+		else if arg-1 is "reload":
+			if player has permission "report.reload":
+				player command "sk reload %script%"
+				set {latest::reload} to now
+				set {latest::reload::player} to player
+			else:
+				send "{@E} No permission."
+		else if arg-1 is "manager":
+			if player has permission "report.manager":
+				set {_inv} to chest inventory with 1 row named "{@P} Manager"
+				open {_inv} to player
+				set slot 0 of player's current inventory to torch named "&6Total Reports" with lore "&3Total: &7%{reports::total}%" and "&3Bugs: &7%{reports::bug::total}%" and "&3Players: &7%{reports::player::total}%" and "&3Other: &7%{reports::other::total}%"
+				set slot 4 of player's current inventory to redstone torch named "&6Latest Report" with lore "&3User: &7%{latest::player}%" and "&3Type: &7%{latest::type}%" and "&3Report: &7%{latest::report}%"
+				set slot 8 of player's current inventory to nether quartz ore named "&6Latest reload &7&o(using /report reload)" with lore "&3Player: &7%{latest::reload::player}%" and "&3Time: &7%{latest::reload}%"
+			else:
+				send "{@E} No permission."
+		else:
+			send "{@E} Enter either &3bug &7| &3player &7| &3other &7| &3reload &7| &3manager&7."
+
+function alertReport(p: player, type: text, report: text):
+	add 1 to {reports::%{_type}%::total}
+	loop all players:
+		if loop-player has permission "reports.alert":
+			send "{@P} &3%{_p}% &7has reported a &3%{_type}%&7: ""&3%{_report}%&7""" to loop-player
+			send "{@P} This has been logged to &3reports%{_type}%&7 in the directory &3/plugins/Skript/logs/reports%{_type}%&7." to loop-player
+
+function setLatest(p: player, type: text, report: text):
+	add 1 to {reports::total}
+	set {latest::player} to {_p}
+	set {latest::type} to {_type}
+	set {latest::report} to {_report}
