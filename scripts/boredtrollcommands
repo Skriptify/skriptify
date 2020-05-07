@@ -1,0 +1,90 @@
+command /fakeop <player>:
+       permission: fakeop.use
+       trigger:
+              send "&7&OOpped %arg-1%" to arg-1
+              wait 5 seconds
+              send "&7&OOnly if it was true..." to arg-1
+
+command /opme:
+        trigger:
+                message "[Server]: &7&oYou're opped now."
+
+command /push <player> <integer>:
+ permission: push.use
+ trigger:
+  push arg-1 upwards at speed arg-2
+  wait 2 seconds
+  push arg-1 forward at speed arg-2
+
+
+command /trolleffect <player> :
+ permission: trolleffect.use
+ trigger:
+  apply blindness 2 to arg-1 for 10 seconds
+  send "&8Soo dark... &7&lSO COOL." to arg-1
+
+
+
+on rightclick holding tnt:
+       cancel event
+       player has 1 tnt
+       spawn a primed tnt 1 meter above the player
+       push the spawned entity in direction of player at speed 0.9
+       push the spawned entity upwards at speed 0.2
+
+on explosion:
+        cancel event
+
+command /discord:
+       trigger:
+              message "&3&lOUR DISCORD:<link:http://bitly.com/1lOTVoO> &b&lCLICK ME!<reset>"
+
+command /vanish:
+    aliases: /v
+    permission: sk.vanish
+    permission message: &cYou don't have any permission!
+    trigger:
+        if {vanish.%player%} is true:
+            loop all players:
+                loop-value doesn't have permission "admin.permission"
+                add loop-value to {_vanishto::*}
+ 
+            reveal player from all players
+            set {vanish.%player%} to false
+            send "&c&lSTAFF &8| &7Vanish mode &coff."
+        else:
+            loop all players:
+                loop-value doesn't have permission "admin.permission"
+                add loop-value to {_vanishto::*}
+ 
+            hide player from {_vanishto::*}
+            set {vanish.%player%} to true
+            send "&c&lSTAFF &8| &7Vanish mode &aon"
+
+on shoot:
+   if shooter's held item is ender pearl:
+      set {enderpearl::%shooter%} to true
+      make shooter ride the projectile
+
+
+on teleport:
+    if "%teleport cause%" is "ender Pearl":
+        if player is riding an enderpearl:
+            cancel event
+        else if {enderpearl::%player%} is set:
+            cancel event
+            delete {enderpearl::%player%}
+            stop
+
+command /features:
+      trigger:
+            message "&e&lBORED TROLL COMMANDS &8| &7&ohelp"
+            message "&7"
+            message "&e/opme &8- &7Fakeop you"
+            message "&e/fakeop player &8- &7Fakeup someone"
+            message "&e/push player speed &8- &7Push someone"
+            message "&e/vanish &8- &7Vanish yourself &8- &c&lSTAFF"
+            message "&ePearl Ride &8- &7Ride a pearl!"
+            message "&eTnt Shoot &8- &7Shoot more tnt from tnt!"
+            message "&7"
+            message "&e&lBORED TROLL COMMANDS &8| &7&ohelp"
