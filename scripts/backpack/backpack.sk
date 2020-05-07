@@ -1,0 +1,21 @@
+options:
+    p: skript.backpack      # Permission needed for the command
+    pm: &cNo permission!    # Permission message
+    guiName: &8Backpack     # GUI name
+    rows: 3                 # Backpack rows (Storage)
+
+command /backpack [<text>]:
+    permission: skript.backpack
+    permission message: {@pm}
+    trigger:
+        open chest with {@rows} rows named "{@guiName}" to player
+        wait 1 tick
+        set {_num} to 0
+        loop {backpack::%uuid of player%::*}:
+            set slot {_num} of player's current inventory to loop-value
+            add 1 to {_num}
+
+on inventory close:
+    if inventory name of player's current inventory contains "{@guiName}":
+        loop 54 times:
+            set {backpack::%uuid of player%::%loop-number - 1%} to slot "%loop-number - 1%" parsed as an integer of current inventory of player
