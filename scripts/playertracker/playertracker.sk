@@ -1,0 +1,43 @@
+#PlayerTracker skripted by: SH4D03
+
+
+options:
+	name: &c&lPlayer Tracker 
+	range: 50 
+	color1: &3&l
+	color2: &b
+
+command /playertracker:
+	permission: playertracker.give
+	trigger:
+		give player compass named "{@name}"
+
+on join:
+	wait 5 seconds
+	while player is online:
+		if player's tool is compass named "{@name}":
+			loop players in radius {@range} around player:
+				player is not loop-player
+				if {_target} is not set:
+					set {_target} to loop-player's location
+					set {_target} to loop-player
+				if distance between player and loop-player < distance between player and {_target}:
+					set {_target} to loop-player
+					set {_target} to distance between player and loop-player
+			if {_target} isn't set:
+				send action bar "{@color1}Nearest Player: {@color2}None" to player
+				delete {current::%player's uuid%}
+			else:
+				set {current::%player's uuid%} to {_target}
+				set {_dist} to (distance between player and {_target}) rounded to 1 decimal place
+				set {_height} to (y-coord of {_target}) - (y-coord of player) rounded to 1 decimal place
+				set player's compass target to location of block at {_target}
+				if "%{_dist}%" doesn't contain ".":
+					set {_dist} to "%{_dist}%.0"
+				if "%{_height}%" doesn't contain ".":
+					set {_height} to "%{_height}%.0"
+				send action bar "{@color1}Nearest Player: {@color2}%{_target}%{@color1}Distance: {@color2}%{_dist}% {@color1}Height: {@color2}%{_height}%" to player
+			delete {_target}
+			delete {_dist}
+			delete {_height}
+		wait 15 ticks
