@@ -1,0 +1,52 @@
+
+# CommandBlocker by Farwl@FarwlOSS
+
+# CODE #
+
+# Events
+
+command:
+    loop {blockedcommands::*}:
+        loop-value = "%command%":
+            cancel event
+            send "&cCommand blocked."
+
+# Commands
+
+command /commandblocker [<text>]:
+	aliases: /cb:commandblocker, /cb, /cb:cb
+	permission: cb.commandblocker
+	permission message: {@np}
+	trigger:
+		set {_a::*} to (the args) split at " "
+		{_a::1} is set:
+			{_a::1} = "add":
+				{_a::2} is set:
+					{blockedcommands::*} contains "%{_a::2}%":
+						send "&cThat command is already blocked, so you can't add it."
+					else:
+						{_a::2} = "commandblocker" or "cb" or "cb:commandblocker" or "cb:cb":
+							send "&cThis command can only be disabled from the config."
+						else:
+							add "%{_a::2}%" to {blockedcommands::*}
+							send "&aCommand '%{_a::2}%' is now blocked."
+				else:
+					send "&c/cb [add/remove/list] [command]"
+			else if {_a::1} = "remove":
+				{blockedcommands::*} contains "%{_a::2}%":
+					remove "%{_a::2}%" from {blockedcommands::*}
+					send "&aCommand '%{_a::2}%' is no longer blocked."
+				else:
+					send "&cThat command isn't blocked, so you can't remove it."
+			else if {_a::1} = "list":
+				size of {blockedcommands::*} > 0:
+					send "&aRetrieving blocked commands..."
+					set {_s} to size of {blockedcommands::*}
+					set {_c::*} to {blockedcommands::*}
+					send "&7Found &a&l%{_s}% &7blocked commands: &a%{_c::*}%"
+				else:
+					send "&cThere are no blocked commands, add some with /cb add"
+			else:
+				send "&c/cb [add/remove/list] [command]"
+		else:
+			send "&c/cb [add/remove/list] [command]"
