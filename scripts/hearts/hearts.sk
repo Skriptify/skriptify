@@ -1,0 +1,49 @@
+#Hearts skripted by: SH4D03
+
+
+options:
+	hearts: 10 #This is the number of hearts displayed
+	color1: &4 #This is the color of the victim's current hearts
+	color2: &7 #This is the color of the victim's used hearts
+	color3: &c #This is the color used to display a half heart
+	symbol: ❤ #This is the symbol used to display a heart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+on damage:
+	wait 5 ticks
+	set {_health} to victim's health
+	set {_max} to victim's max health
+	set {_hearts} to ({_health} / {_max}) * {@hearts}
+	set {_hearts-1} to "%{_hearts}%"
+	set {_hearts-count} to  rounded down {_hearts}
+	set {_hearts-display} to ""
+	loop {_hearts-count} times:
+		set {_hearts-display} to "%{_hearts-display}%{@color1}{@symbol}"
+	if {_hearts-1} contains ".":
+		set {_hearts-display} to "%{_hearts-display}%{@color3}{@symbol}"
+		add 1 to {_hearts-count}
+	set {_rest} to {@hearts} - {_hearts-count}
+	loop {_rest} times:
+		set {_hearts-display} to "%{_hearts-display}%{@color2}{@symbol}"
+	send action bar "{@color1}%{_hearts-display}%" to attacker
