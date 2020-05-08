@@ -1,0 +1,82 @@
+#Lootbox skripted by: SH4D03
+
+#Donations: paypal.me/SH4D03
+
+options:
+	item: sea lantern #This is the item of the lootbox
+	name: &b&lLoot Box #This is the name of the lootbox
+	animation: true #Whether placing a lootbox should play an animation or not
+	sound: true #Whether placing a lootbox should play a sound or not
+	lore: &7Place for Rewards! #The lore of the lootbox
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+on place of {@item}:
+	if name of player's tool is "{@name}":
+		if {@animation} is true:
+			wait 2 ticks
+			set block to red stained glass
+			wait 2 ticks
+			set block to orange stained glass
+			wait 2 ticks
+			set block to yellow stained glass
+			wait 2 ticks
+			set block to lime stained glass
+			wait 2 ticks
+			set block to blue stained glass
+			wait 2 ticks
+			set block to purple stained glass
+			wait 2 ticks
+			set block to black stained glass
+			wait 2 ticks
+			if {@sound} is true:
+				play sound "entity.experience_orb.pickup" with volume 5 and pitch 16 at player 
+		else if {@sound} is true:
+			play sound "entity.experience_orb.pickup" with volume 5 and pitch 16 at player 
+		set block to air
+		set {_loot} to a random element out of {lootbox::*}
+		give player {_loot}
+		send action bar "&3&lYou Won:&b %{_loot}%" to player
+			
+
+command /lootbox [<text>] [<number=1>] [<player=%player%>]:
+	permission: op
+	trigger:
+		if arg-1 is "give":
+			give arg-2 of {@item} named "{@name}" with lore "{@lore}" to arg-3
+		else if arg-1 is "add":
+			if player's tool is not air:
+				add player's tool to {lootbox::*}
+				send "&3&lLootbox &6» &bItem successfully added!" to player
+			else:
+				send "&3&lLootbox &6» &bYou can't add air!" to player
+		else if arg-1 is "remove":
+			if {lootbox::*} contains player's tool:
+				remove player's tool from {lootbox::*}
+				send "&3&lLootbox &6» &bItem successfully added!" to player
+			else:
+				send "&3&lLootbox &6» &bYour item was not found in the lootbox!" to player
+		else if arg-1 is "list":
+			send "&3&lLootbox List:" to player
+			loop {lootbox::*}:
+				send "&9[%loop-index%] &b%loop-value%" to player
+		else:
+			send "&3&lUsage:" to player
+			send " &b/lootbox give [<amount>] [<player>]" to player
+			send " &b/lootbox add (Must be holding item)" to player
+			send " &b/lootbox remove (Must be holding item)" to player
+			send " &b/lootbox list" to player
