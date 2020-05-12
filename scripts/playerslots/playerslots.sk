@@ -1,0 +1,16 @@
+on load:
+  set {server::playerslots} to 250
+
+command /playerslot <number>:
+  permission: op
+  aliases: slot, ps
+  trigger:
+    set {server::playerslots} to arg-1
+    play sound "entity.player.levelup" to player
+    message "&f "
+    message "&3Set the current player slots to &b%{server::playerslots}%&3!"
+    message "&f "
+
+on join:
+  if number of online players is more than {server::playerslots}:
+    console command "/kick %player% This server is full!"
