@@ -1,0 +1,37 @@
+options:
+  elevatorline1: [elevator] # message that must be written to setup sign
+  elevatorline1set: &f[Elevator] #What the message will be set to to make sure it has been set
+  signcreatemessage:&e sign has been created
+  invalidtype: &eYou May only use Up or Down
+  teleportupmessage: &eTeleported UP!
+  teleportdownmessage: &eTeleported UP!
+
+on sign change:
+  if line 1 of event-block is "{@elevatorline1}":
+    if line 2 of event-block is "Up" or "up":
+      set line 1 of event-block to "{@elevatorline1set}"
+      send "{@signcreatemessage}"
+      set line 2 of event-block to "Up"
+    else if line 2 of event-block is "Down" or "down":
+      set line 1 of event-block to "{@elevatorline1set}"
+      send "{@signcreatemessage}"
+      set line 2 of event-block to "Down"
+    else:
+      send "{@invalidtype}"
+
+on right click on sign:
+  if line 1 of event-block is "{@elevatorline1set}":
+    if line 2 of event-block is "Up":
+      loop all blocks above event-block:
+        if loop-block is air:
+          if block above loop-block is air:
+            teleport player to block above loop-block
+            send "{@teleportupmessage}"
+            stop
+    else if line 2 of event-block is "Down":
+      loop all blocks under event-block:
+        if loop-block is air:
+          if block under loop-block is air:
+            teleport player to loop-block
+            send "{@teleportdownmessage}"
+            stop
