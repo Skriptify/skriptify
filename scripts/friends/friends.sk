@@ -1,0 +1,115 @@
+# AUTHOR: 3meraldK, 3meraldK#3099
+# VERSION: v1.0
+# ADDONS: none
+
+options:
+	prefix: &e&l[&a&lFRIENDS&e&l]				# Prefix which shows in /friends and /friends info
+	permission: friends.use					# Permission needed to use /friends command
+	permsg: &cError: &7Insufficient permissions. 	# You got this message when you have no permission to use /friends    
+	
+variables:
+	{friends::%player%::toggle} = true
+
+command /friends [<text>] [<offlineplayer>]:
+	aliases: f
+	permission: {@permission}
+	permission message: {@permsg}
+	trigger:
+		if arg 1 isn't set:
+			send "&8&l|------- {@prefix} &8&l-------|" and ""
+			send "&8> &e/friends &7- shows this list"
+			send "&8> &e/friends add &a<nick> &7- adds a new friend"
+			send "&8> &e/friends accept/deny &a<nick> &7- accepts/denies an invitation"
+			send "&8> &e/friends remove &a<nick> &7- removes a friend"
+			send "&8> &e/friends list &7- shows a list of your friends"
+			send "&8> &e/friends toggle &7- toggles invitations"
+			send "&8> &e/friends info &7- script information"
+			send "" and "&8&l|------- {@prefix} &8&l-------|"
+		if arg 1 is "add":
+			if arg 2 is set:
+				if arg 2 isn't "%player%":
+					loop all players:
+						if "%loop-player%" is arg 2:
+							if {friends::%player%::toggle} is true:
+								if {friends::%player%::invitation::%loop-player%} isn't set:
+									set {friends::%player%::invitation::%loop-player%} to false
+									if {friends::%player%::invitation::%loop-player%} is false:
+										set {friends::%player%::invitation::%loop-player%} to true
+										send "&aYour invitation has been sent!"
+										send "&7You just got an invitation to become a friend of &a%player%" and "&7Enter &c/f accept/deny %player% &7to process!" to loop-player
+										
+										wait 5 minutes
+										if {friends::%player%::invitation::%loop-player%} is set:
+											send "&7You didn't reply in 5 minutes, so an invitation from %player% has been canceled." to loop-player
+											send "&7Player &a%loop-player% &7you invited didn't reply in 5 minutes, so your invite has been canceled."
+										delete {friends::%player%::invitation::%loop-player%}
+									else:
+										send "&cError: &7You already sent an invitation to that player."
+							else:
+								send "&cError: &7This player toggled off invitations!"
+						else:
+							send "&cError: &7That player doesn't exist."
+				else:
+					send "&cError: &7You can't add yourself to a friend list."
+			else:
+				send "&cError: &7Specify the name of a player."
+		if arg 1 is "accept":
+			if arg 2 is set:
+				if {friends::%arg-2%::invitation::%player%} is true:
+					add "%arg-2%" to {friends::%player%::friends::*}
+					add "%player%" to {friends::%arg-2%::friends::*}
+					send "&a%arg-2% &7has became your new friend."
+					send "&a%player% &7has became your new friend." to arg-2
+					delete {friends::%arg-2%::invitation::%player%}
+				else:
+					send "&cError: &7You didn't get an invitation from that player."
+			else:
+				send "&cError: &7Specify the name of a requester."
+		if arg 1 is "deny":
+			if arg 2 is set:
+				if {friends::%arg-2%::invitation::%player%} is true:
+					send "&cSuccessfully denied that invitation!"
+					send "&7Player &a%player% &7you sent an invitation has denied your request." to arg-2
+					delete {friends::%arg-2%::invitation::%player%}
+				else:
+					send "&cError: &7You didn't get an invitation from that player."
+			else:
+				send "&cError: &7Specify the name of a requester."
+		if arg 1 is "remove":
+			if arg 2 is set:
+				if {friends::%player%::friends::*} contains "%arg-2%":
+					remove "%arg-2%" from {friends::%player%::friends::*}
+					remove "%player%" from {friends::%arg-2%::friends::*}
+					send "&7Successfully deleted &a%arg-2% from your friends list."
+					send "&7Player &a%player% has removed you from his friends list."
+				else:
+					send "&cError: &7Your friend called &a%arg-2% &7doesn't exist."
+			else:
+				send "&cError: &7Specify your friend's username."
+		if arg 1 is "list":
+			if {friends::%player%::friends::*} is set:
+				set {_msg} to "%{friends::%player%::friends::*}%"
+				set {_flist::*} to {_msg} split at ", " and " and "
+				send "&8&l|------- {@prefix} &8&l-------|" and ""
+				loop (size of {_flist::*}) times:
+					if "%{_flist::%loop-value%}%" parsed as player is online:
+						send "&e%{_flist::%loop-value%}% &a[ONLINE]"
+					else:
+						send "&e%{_flist::%loop-value%}% &c[OFFLINE]"
+				send "" and "&8&l|------- {@prefix} &8&l-------|"
+			else:
+				send "&cError: &7You don't have any friends."
+		if arg 1 is "toggle":
+			if {friends::%player%::toggle} is true:
+				set {friends::%player%::toggle} to false
+				send "&7Successfully toggled this option to &cfalse"
+			else:
+				set {friends::%player%::toggle} to true
+				send "&7Successfully toggled this option to &atrue"
+		if arg 1 is "info":
+			send "&8&l|------- {@prefix} &8&l-------|" and ""
+			send "&8> &e&lAUTHOR: &e3meraldK, 3meraldK##3099"
+			send "&8> &6&lVERSION: &6v1.0"
+			send "" and "&8&l|------- {@prefix} &8&l-------|"
+		else:
+			send "&cError: &7Use &b/friends &7command to process"
