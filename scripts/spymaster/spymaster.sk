@@ -1,0 +1,29 @@
+#SpyMaster skripted by: SH4D03
+
+
+
+
+command /spy:
+	permission: skript.spy
+	trigger:
+		if {spy::%uuid of player%} is not set:
+			set {spy::%uuid of player%} to true
+			send ""
+			send "&9&lSpy &6» &aSpy enabled!"
+			send ""
+		else:
+			delete {spy::%uuid of player%}
+			send ""
+			send "&9&lSpy &6» &cSpy disabled!"
+			send ""
+
+on command:
+	if executor is console:
+		loop all players where [input has permission "skript.spy"]:
+			{spy::%uuid of loop-player%} is set
+			send "&9&lSpy &6» &6Console used &b/%full command%" to loop-player
+			stop
+	executor doesn't have permission "skript.spy"
+	loop all players where [input has permission "skript.spy"]:
+		{spy::%uuid of loop-player%} is set
+		send "&5&lSpy &6» &6%executor% &6used &b/%full command%" to loop-player
