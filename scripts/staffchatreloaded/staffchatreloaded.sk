@@ -1,0 +1,140 @@
+options:
+		#Please Type The Name of The file you put this code into with out .sk
+		# Example: StaffChat
+		#The File name written on here is StaffChat Change it here  \/ \/ 
+#
+#
+  filename: StaffChat  
+#
+#
+  scsend: staffchat.send  
+  sctoggle: staffchat.toggle  
+  screcieve: staffchat.recieve
+  acsend: adminchat.send  
+  acrecieve: adminchat.recieve
+  mcsend: modchat.send  
+  mcrecieve: modchat.recieve
+  hcsend: helperchat.send  
+  hcrecieve: helperchat.recieve
+  help: staffchat.help  
+  allcmd: staffchat.*  
+  reload: staffchat.reload  
+  noPerms: &4No Perms  
+  
+  
+  # Any Option that starts with SC is Normal Staff Chat
+  # AC is Admin Chat
+  # MC is Moderator Chat
+  # HC is Helper Chat
+  
+command staffchat [<text>]:
+  aliases: sc
+  trigger:
+    if arg-1 is set:
+      if player has permission "{@scsend}" or "{@allcmd}":
+        loop {sc::*}:
+          send "&b[&6StaffChat&b] &c%player%&7: %coloured arg-1%" to loop-value
+      else:
+        send "{@noPerms}"
+    else:
+      if player has permission "{@sctoggle}" or "{@allcmd}":
+        if {sctoggle::%player's uuid%} is true:
+          set {sctoggle::%player's uuid%} to false
+          send "&b[&6StaffChat&b] &7Staff Chat toggled &fOFF!&7"
+        else if {sctoggle::%player's uuid%} is false:
+          set {sctoggle::%player's uuid%} to true
+          send "&b[&6StaffChat&b] &7Staff Chat toggled &aON&7!"
+
+command helperchat [<text>]:
+  aliases: hc
+  trigger:
+    if arg-1 is set:
+      if player has permission "{@hcsend}" or "{@allcmd}":
+        loop {hc::*}:
+          send "&b[&dHelperChat&b] &c%player%&7: %coloured arg-1%" to loop-value
+      else:
+        send "{@noPerms}"
+
+command modchat [<text>]:
+  aliases: sc
+  trigger:
+    if arg-1 is set:
+      if player has permission "{@mcsend}" or "{@allcmd}":
+        loop {mc::*}:
+          send "&b[&9ModChat&b] &c%player%&7: %coloured arg-1%" to loop-value
+      else:
+        send "{@noPerms}"
+
+command adminchat [<text>]:
+  aliases: sc
+  trigger:
+    if arg-1 is set:
+      if player has permission "{@acsend}" or "{@allcmd}":
+        loop {ac::*}:
+          send "&b[&fAdminChat&b] &c%player%&7: %coloured arg-1%" to loop-value
+      else:
+        send "{@noPerms}"
+
+command staffchatreload:
+  permission: {@reload}
+  aliases: screload
+  trigger:
+    send "&aStaff Chat is Reloading"
+    command "sk reload {@filename}"
+
+command staffchathelp:
+  permission: {@help}
+  aliases: scHelp
+  trigger:
+    send "&b[&6StaffChat&b] &aHelp!"
+    send "&6- &7/staffchat (toggle staffChat)"
+    send "&6- &7/staffchat (message) (send message to staffchat)"
+    send "&6- &7/helperchat (message) (send message to HelperChat)"
+    send "&6- &7/modchat (message) (send message to ModeratorChat)"
+    send "&6- &7/adminchat (message) (send message to AdminChat)"
+    send "&6- &7/screload (reloads StaffChat File)"
+    send "&6- &7/schelp (sends this help message)"
+
+on load:
+  broadcast "&aStaffChat Reloaded!"
+
+on join:
+  if player has permission "{@allcmd}":
+    add player to {ac::*}
+    add player to {mc::*}
+    add player to {hc::*}
+    add player to {sc::*}
+  else:
+    if player has permission "{@hcrecieve}":
+      add player to {hc::*}
+    if player has permission "{@screcieve}":
+      add player to {sc::*}
+    if player has permission "{@mcrecieve}":
+      add player to {mc::*}
+    if player has permission "{@acrecieve}":
+      add player to {ac::*}
+
+on quit:
+  if player has permission "{@allcmd}":
+    remove player from {ac::*}
+    remove player from {mc::*}
+    remove player from {hc::*}
+    remove player from {sc::*}
+  else:
+    if player has permission "{@hcrecieve}":
+      remove player from {hc::*}
+    if player has permission "{@screcieve}":
+      remove player from {sc::*}
+    if player has permission "{@mcrecieve}":
+      remove player from {mc::*}
+    if player has permission "{@acrecieve}":
+      remove player from {ac::*}
+
+on chat:
+  if {sctoggle::%player's uuid%} is true:
+    cancel event
+    make player execute command "sc %message%"
+  else if first character of message is "?":
+    if player has permission "{@scsend}":
+      cancel event
+      make player execute command "sc %subtext of message from characters 2 to (length of message)%"
