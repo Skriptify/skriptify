@@ -1,0 +1,60 @@
+options:
+	delay: 3 seconds #Spawn delay, in seconds
+	cooldown: 15 seconds #Cooldown to process /spawn command, in seconds
+	safety: true #Safety mode - script finds the highest block and teleports there if it's set to true.
+	move: true #If it's true teleportation will be canceled if player moves.
+	
+	perm: essentials.setspawn #Permission to use /setspawn
+	spawnperm: essentials.spawn #Permission to use /spawn
+	
+	permsg: &cError: &7Insufficient permissions. #Message if you don't have permission to use /setspawn
+	spawnsetmsg: "&7Spawn has been set to &c%player's location%" #Message if an admin set a spawn
+	tpmsg: "&7Successfully teleported you to spawn!" #Message if player teleports to spawn
+	movemsg: "&cError: &7Teleportation canceled due to a move!" #Message if player moves, if 'move' is set to true
+	
+function spawn(p: player):
+	if {@safety} is true:
+		set {_y} to highest block at {spawn.location}
+		teleport {_p} to block above {_y}
+	else:
+		teleport {_p} to {spawn.location}
+	set {spawn.%{_p}%.lastused} to now
+	send {@tpmsg} to {_p}
+	
+	
+command /setspawn:
+	permission: {@perm}
+	permission message: {@permsg}
+	trigger:
+		set {spawn.location} to player's location
+		send {@spawnsetmsg}
+		
+command /spawn:
+	permission: {@spawnperm}
+	permission message: {@permsg}
+	trigger:
+		set {_waited} to difference between {spawn.%player%.lastused} and now
+		if {_waited} is less than {@cooldown}:
+			send "&cError: &7You have to wait %difference between {@cooldown} and {_waited}% &7to teleport to spawn."
+			stop
+		if {@move} is true:
+			send "&7Wait &a{@delay} &7to teleport and &cdon't move!" # You can edit message there
+		else:
+			send "&7Wait &a{@delay} &7to teleport!" # You can edit message there
+		set {_pX} to round(player's x-coords)
+		set {_pY} to round(player's y-coords)
+		set {_pZ} to round(player's z-coords)
+		wait {@delay}
+		if {@move} is true:
+			if round(player's x-coords) is {_pX}: # Rounding it allows to move a little only, like in EssentialsSpawn
+				if round(player's y-coords) is {_pY}:
+					if round(player's z-coords) is {_pZ}:
+						spawn(player)
+					else:	
+						send {@movemsg}
+				else:
+					send {@movemsg}
+			else:
+				send {@movemsg}
+		else:
+			spawn(player)
