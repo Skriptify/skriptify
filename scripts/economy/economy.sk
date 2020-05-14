@@ -1,0 +1,46 @@
+on join:
+  if {balance::%player's uuid%} is not set:
+    set {balance::%player's uuid%} to 0
+
+command /eco [<text>] [<player>] [<integer>]:
+  permission: admin.*
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        if arg-3 is set:
+          if arg-1 is "give":
+            add arg-3 to {balance::%arg-2's uuid%}
+            send "&aAdded &c%arg-3%&c$ &ato &c%arg-2%&c's &abalance!"
+          else if arg-1 is "take":
+            subtract arg-3 from {balance::%arg-2's uuid%}
+            send "&aRemoved &c%arg-3%&c$ &afrom &c%arg-2%&c's &abalance!"
+          else if arg-1 is "set":
+            set {balance::%arg-2's uuid%} to arg-3
+            send "&aSet &c%arg-2%&c's &abalance to &c%arg-3%&c$&a!"
+        else:
+          send "&cPlease use this format: /eco [give:take:set] [player] [value]"
+      else:
+        send "&cPlease use this format: /eco [give:take:set] [player] [value]"
+    else:
+      send "&cPlease use this format : /eco [give:take:set] [player] [value]"
+
+command /bal [<player>]:
+  aliases: balance, bal, money
+  trigger:
+    if arg-1 is not set:
+      send "&aBalance: &c%{balance::%sender's uuid%}%&c$"
+    if arg-1 is set:
+      send "&a%arg-1%&a's balance: &c%{balance::%arg-1's uuid%}%&c$"
+
+command /economy:
+  trigger:
+    send "&6&lCommands:"
+    send ""
+    send "&7Add to a player's balance &e| &8/eco give <player> <amount>"
+    send "&7Take from a player's balance &e| &8/eco take <player> <amount>"
+    send "&7Set a player's balance &e| &8/eco set <player> <amount>"
+    send "&7Open up this page &e| &8/Economy"
+    send "&7Check your current balance &e| &8/Bal"
+    send ""
+    send "&c&lUpdates & Patch notes will be coming!"
+    send ""
