@@ -1,0 +1,127 @@
+#ScoreBoard skripted by: SH4D03
+#ScoreBoard allows you to customise an individual scoreboard for each world
+#For a full list of commands, do /scoreboard in game
+#Options below are configurable
+
+options:
+	prefix: &3&lScoreBoard &8|            #This is the prefix used in scoreboard related messages
+	colour1: &3                                       #This is the primary colour used in scoreboard related messages
+	colour2: &b                                       #This is the secondary colour used in scoreboard related messages
+	perm: scoreboard.admin               #This is the permission required to do scoreboard admin commands
+	refresh: 10                                        #This is how often in ticks the scoreboard refreshes (Recommended: 10)
+	filename: test                                   #Please enter the name of your script file here
+
+
+
+
+#HARD CODE
+#Don't edit if you do not know what you are doing
+
+function scoreboard(player: player, world: text):
+	clear {_player}'s scoreboard
+	set title of {_player}'s scoreboard to ""
+	if {Scoreboard::%{_world}%::*} is not set:
+		stop
+	set {_line} to 1
+	loop 15 times:
+		if {Scoreboard::%{_world}%::%{_line}%} is set:
+			set line {_line} of {_player}'s scoreboard to "%{Scoreboard::%{_world}%::%{_line}%}%"
+		add 1 to {_line}
+	if {Scoreboard::%{_world}%::title} is set:
+		set title of {_player}'s scoreboard to "%{Scoreboard::%{_world}%::title}%"
+command /scoreboard [<text>] [<integer>] [<text>] :
+	trigger:
+		if arg-1 is "set" or "Set":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			if arg-2 and arg-3 is set:
+				set {_world} to world of player
+				set {Scoreboard::%{_world}%::%arg-2%} to colored arg-3
+				send "{@prefix} {@colour1}Successfully set line {@colour2}%arg-2%{@colour1} of scoreboard in world {@colour2}%world of player% {@colour1}to: &f%{Scoreboard::%{_world}%::%arg-2%}%" to player
+			else:
+				send "{@prefix} {@colour1}Correct Usage: {@colour2}/scoreboard set <line> <text>" to player
+		else if arg-1 is "delete" or "Delete":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			if arg-2 is set:
+				set {_world} to world of player
+				delete {Scoreboard::%{_world}%::%arg-2%}
+				send "{@prefix} {@colour1}Successfully deleted line {@colour2}%arg-2%{@colour1} of scoreboard in world {@colour2}%world of player%{@colour1}!" to player
+			else:
+				send "{@prefix} {@colour1}Correct Usage: {@colour2}/scoreboard delete <line>" to player
+		else if arg-1 is "title" or "Title":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			if arg-3 is set:
+				set {_world} to world of player
+				set {Scoreboard::%{_world}%::title} to colored arg-3
+				send "{@prefix} {@colour1}Successfully set title of scoreboard in world {@colour2}%world of player% {@colour1}to: &f%{Scoreboard::%{_world}%::title}%" to player
+			else:
+				send "{@prefix} {@colour1}Correct Usage: {@colour2}/scoreboard title 1 <text>" to player
+		else if arg-1 is "clear" or "Clear":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			set {_world} to world of player
+			delete {Scoreboard::%{_world}%::*}
+			send "{@prefix} {@colour1}Successfully deleted scoreboard in world {@colour2}%world of player%{@colour1}!" to player
+		else if arg-1 is "toggle":
+			if {Scoreboard::%player's uuid%} is set:
+				delete {Scoreboard::%player's uuid%}
+				send "{@prefix} {@colour1}Successfully toggled scoreboard visibility to: {@colour2}OFF" to player
+			else:
+				set {Scoreboard::%player's uuid%} to true
+				send "{@prefix} {@colour1}Successfully toggled scoreboard visibility to: {@colour2}ON" to player
+		else if arg-1 is "refresh" or "Refresh":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			loop all players:
+				scoreboard(loop-player, "%world of loop-player%")
+			send "{@prefix} {@colour1}Successfully refreshed the scoreboard for all online players" to player
+		else if arg-1 is "view" or "View":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			send "{@prefix} {@colour1}&lCurrent Scoreboard:" to player
+			set {_world} to "%world of player%"
+			if {Scoreboard::%{_world}%::title} is set:
+				send "%{Scoreboard::%{_world}%::title}%" to player
+			loop 15 times:
+				if {Scoreboard::%{_world}%::%{_line}%} is set:
+					send "%{Scoreboard::%{_world}%::%{_line}%}%" to player
+				add 1 to {_line}
+		else if arg-1 is "reload" or "Reload":
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}You do not have permission to run this command!" to player
+				stop
+			make player execute command "skript reload {@filename}"
+		else:
+			if player does not have permission "{@perm}":
+				send "{@prefix} {@colour1}Usage: {@colour2}/scoreboard toggle" to player
+				stop
+			else:
+				send "{@prefix} {@colour1}&lUsage:" to player
+				send "{@colour2}/scoreboard set <line> <text> {@colour1}(You can do this in each world)" to player
+				send "{@colour2}/scoreboard clear {@colour1}(You can do this in each world)" to player
+				send "{@colour2}/scoreboard title 1 <text> {@colour1}(You can do this in each world)" to player
+				send "{@colour2}/scoreboard toggle {@colour1}(Toggles scoreboard visibility)" to player
+				send "{@colour2}/scoreboard delete <line> {@colour1}(You can do this in each world)" to player
+				send "{@colour2}/scoreboard refresh {@colour1}(This refreshes everyone's scoreboards)" to player
+				send "{@colour2}/scoreboard view {@colour1}(This shows you a text version of your worlds current scoreboard)" to player
+				send "{@colour2}/scoreboard reload {@colour1}(Reloads the script and config)" to player
+on world change:
+	scoreboard(player, "%world of player%")		
+on join:
+	while player is online:	
+		scoreboard(player, "%world of player%")
+		wait {@refresh} ticks
+on command "skript reload {@filename}":
+	if executor is not console:
+		cancel event
+		send "{@prefix} {@colour1}Reloading..." to player
+		execute console command "script reload {@filename}"
+		send "{@prefix} {@colour1}Successfully reloaded Version 1.0" to player
