@@ -1,0 +1,137 @@
+options:
+  prefix: &3[&7Rank Vouchers&3]
+  addvoucher: rank.add
+  voucheraddinventory: &6Rank Add
+  vouchergive: rank.give
+  vouchergiveinventory: &aRank Giver
+  command: pex user %player% group set %{rank::cmd::%{_t}%}% # Please Use %player% instead of player and %{_t}% instead of group 
+  fullaccess: voucher.all
+  voucherremove: voucher.remove
+
+
+#
+#
+#		NOTE
+#
+#
+#
+#	For This Skript To Work You Must Write All The Names Of The groups in Lower Case Example "vip" NOT "VIP"
+#
+#
+#
+#
+#
+
+
+command voucheradd [<string>] [<string>]:
+  permission: {@addvoucher}
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        if {ranks::*} contains arg-1:
+          send "{@prefix} &7This Rank Already has a rank voucher" to player
+          send "&7Use /removerank %arg-1% to remove the rank voucher" to player
+        else:
+          open virtual chest inventory with size 3 named "{@voucheraddinventory}" to player
+          format gui slot 13 of player with player's tool
+          format gui slot 11 of player with red wool named "&c&lCancel" to close:
+            send "{@prefix} &cCanceled" to player
+          format gui slot 15 of player with green wool named "&a&lAdd" to close:
+            set {_t} to switchCaseFor(arg-1, false)
+            add {_t} to {ranks::*}
+            set {rank::voucher::%arg-1%} to player's tool
+            send "{@prefix} &aAdded Voucher" to player
+            add player's tool to {rank::voucher::*}
+            set {rank::cmd::%{_t}%} to arg-2
+      else:
+        send "{@prefix} &7Usage: /addrank (rankname) (Group Name of rank)" to player
+    else:
+      send "{@prefix} &7Usage: /addrank (rankname) (Group Name of rank)" to player
+
+command vouchergive [<player>]:
+  permission: {@vouchergive}
+  trigger:
+    if arg-1 is set:
+      rankgive(player, "%arg-1%")
+    else:
+      rankgive(player, "non")
+
+function rankgive(p: player, s: string):
+  if {_s} is "non":
+    open virtual chest inventory with size 6 named "{@vouchergiveinventory}" to {_p}
+    set {_num} to 0
+    loop {ranks::*}:
+      format gui slot {_num} of {_p} with {rank::voucher::%loop-value%} to close:
+        give {_p} {rank::voucher::%loop-value%}
+        send "{@prefix} &aVoucher Recieved" to {_e}
+    add 1 to {_num}
+  else:
+    set {_e} to {_s} parsed as a player
+    open virtual chest inventory with size 6 named "{@vouchergiveinventory}" to {_p}
+    set {_num} to 0
+    loop {ranks::*}:
+      format gui slot {_num} of {_p} with {rank::voucher::%loop-value%} to close:
+        give {_e} {rank::voucher::%loop-value%}
+        send "{@prefix} &aVoucher Recieved" to {_p}
+        send "{@prefix} &aYou have been given a rank voucher" to {_e}
+      add 1 to {_num}
+
+on right click:
+  if {rank::voucher::*} contains player's tool:
+    set {_e::*} to name of player's tool split at " "
+    loop {_e::*}:
+      set {_e} to loop-value
+      set {_t} to switchCaseFor({_e}, false)
+      if {ranks::*} contains {_t}:
+        stop loop
+    command "{@command}"
+    send "{@prefix} &aYou Have redeemed Your Rank You Might Have to relog for changes to occur!" to player
+
+command voucher [<string>]:
+  aliases: vouchers
+  permission: {@fullaccess}
+  trigger:
+    open virtual chest inventory with size 3 named "&6Vouchers" to player
+    format gui slot 11 of player with green wool named "&a&lAdd Voucher" with lore "" and "&7Click Me to add a new rank voucher!" to close:
+      make player execute command "voucheradd %arg-1%"
+    format gui slot 13 of player with glowing paper named "&a&lGive Voucher" with lore "" and "&7Click Me to give a rank voucher!" to close:
+      make player execute command "vouchergive %arg-1%"
+    format gui slot 15 of player with barrier named "&c&lRemove Voucher" with lore "" and "&7Click Me to remove a rank voucher!" to close:
+      make player execute command "voucherremove"
+
+command voucherremove:
+  permission: {@voucherremove}
+  trigger:
+    open virtual chest inventory with size 6 named "{@vouchergiveinventory}" to player
+    set {_num} to 0
+    loop {ranks::*}:
+      format gui slot {_num} of player with {rank::voucher::%loop-value%} to close:
+        remove loop-value from {ranks::*}
+        delete {rank::voucher::%loop-value%}
+        send "&aVoucher Deleted" to player
+    add 1 to {_num}
+
+on script load:
+  set {_letters} to "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz"
+  set {_letter-pairs::*} to {_letters} split at " "
+  loop {_letter-pairs::*}:
+    set {_pair::*} to loop-value split at ""
+    set {_uppercase} to {_pair::1}
+    set {_lowercase} to {_pair::2}
+    set {letters::uppercase::%{_lowercase}%} to {_uppercase}
+    set {letters::lowercase::%{_uppercase}%} to {_lowercase}
+ 
+on script unload:
+  delete {letters::*}
+
+function switchCaseFor(text: text, to-uppercase: boolean) :: text:
+  set {_characters::*} to {_text} split at ""
+  set {_new} to ""
+  loop {_characters::*}:
+    set {_char} to loop-value
+    if {_to-uppercase} is true:
+      set {_char} to {letters::uppercase::%loop-value%}
+    else:
+      set {_char} to {letters::lowercase::%loop-value%}
+    set {_new} to "%{_new}%%{_char}%"
+  return {_new}
