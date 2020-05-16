@@ -1,0 +1,74 @@
+# Ultra Polls
+
+Options:
+	ver: 1.0.0
+	np: {@1}&lx {@2}You aren't allowed to use this command!
+# DO NOT EDIT THE SETTINGS ABOVE
+
+# CONFIG
+
+	1: &d
+	# Primary color. Default is &d (Pink)
+
+	2: &7
+	# Secondary color. Default is &7 (Gray)
+
+# CONFIG
+
+# CODE #
+
+# Functions
+
+# Events
+
+# Commands
+
+command /poll [<text>] [<text>]:
+	aliases: /ultrapolls:/poll, /polls, /ultrapolls:polls
+	usage: {@1}&lx {@2}/poll <start/end> <query>
+	description: Ultra Polls main command.
+	permission: ultrapolls.admin
+	permission message: {@np}
+	trigger:
+		arg-1 = "start":
+			{poll} is set:
+				send "{@1}&lx {@2}There is already an active poll! Cancel it with {@1}/poll end"
+			else:
+				arg-2 is set:
+					set {poll} to arg-2
+					loop "", "{@1}&lPOLL STARTED!", "{@1}&lx {@2}%arg-2%", and "":
+						send "%loop-value%" to all players
+				else:
+					send "{@1}&lx {@2}/poll <start/end> <query>"
+		else if arg-1 = "end":
+			{poll} is set:
+				loop "", "{@1}&lPOLL ENDED!", "{@1}&lx {@2}%{poll}%", "{@1}&lx {@2}Results: &a%size of {poll-yes::*}%&a✔ &c%size of {poll-no::*}%&c✘", and "":
+					send "%loop-value%" to all players
+				delete {poll}, {poll-yes::*}, and {poll-no::*}
+			else:
+				send "{@1}&lx {@2}There is no active poll."
+		else:
+			send "{@1}&lx {@2}/poll <start/end> <query>"
+
+command /vote [<text>]:
+	aliases: /ultrapolls:vote
+	usage: {@1}&lx {@2}/vote <yes/no>
+	description: Ultra Polls vote command.
+	permission: ultrapolls.vote
+	permission message: {@np}
+	trigger:
+		{poll} is set:
+			arg-1 is "yes" or "no":
+				{poll-yes::*} contains player:
+					set {_err} to true
+				else if {poll-no::*} contains player:
+					set {_err} to true
+				{_err}:
+					send "{@1}&lx {@2}You already voted!"
+				else:
+					add player to {poll-%uncolored arg-1%::*}
+					send "{@1}&lx {@2}You voted {@1}&l%arg-1 in uppercase%{@2}."
+			else:
+				send "{@1}&lx {@2}/vote <yes/no>"
+		else:
+			send "{@1}&lx {@2}There is no active poll."
