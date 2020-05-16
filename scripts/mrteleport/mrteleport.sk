@@ -1,16 +1,12 @@
-#
-# simple drag n' drop script by MrScopes
-#
+# Mr Teleport
+# Version 1.0
 
 options:
 
-	# time in seconds, set to 0 for no timer
 	timer: 1
 	
-	# permission to teleport instantly
 	instant tp permission: tp.instant
 
-#
 #
 #
 
