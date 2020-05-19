@@ -5,7 +5,7 @@
 variables:
     prefix = "&c&lPunish »" #Change the prefix in chat
 options:
-    error.offline: "{@punish.prefix} &cThe player is not online"
+    error.offline: "%{prefix}% &cThe player is not online"
     usage.kick: "%{prefix}% &cCorrect Usage: &7/kick <player> <reason>"
     usage.warn: "%{prefix}% &cCorrect Usage: &7/warn <player> <reason>"
     usage.mute: "%{prefix}% &cCorrect Usage: &7/mute <player> <time> <reason>"
@@ -62,8 +62,7 @@ function PunishShow_Register():
     set {punish.show::mutes} to "Mute"
     set {punish.show::bans} to "Ban"
 
-function Time_Check(time: string) :: boolean:
-    set {_c} to true
+function Time_Check(time: string, c: boolean = true) :: boolean:
     loop {letters::*}:
         {_num} contains loop-value-2:
             set {_c} to false
@@ -352,10 +351,10 @@ command /unban [<offline player>] [<text>]:
         if arg-1 is set:
             if arg-2 is set:
                 if {ban::%arg-1's uuid%} is set:
-                    set {_id} to {mute::%arg-1's uuid%}
-                    if {mutes::%{_id}%::time} isn't "perm":
-                        set {_wait} to difference between {mutes::%{_id}%::when} and now
-                        if {_wait} < {mutes::%{_id}%::time} parsed as timespan:
+                    set {_id} to {ban::%arg-1's uuid%}
+                    if {bans::%{_id}%::time} isn't "perm":
+                        set {_wait} to difference between {bans::%{_id}%::when} and now
+                        if {_wait} < {bans::%{_id}%::time} parsed as timespan:
                             set {_c} to true
                         else:
                             delete {ban::%arg-1's uuid%}
