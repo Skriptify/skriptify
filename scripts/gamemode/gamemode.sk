@@ -1,0 +1,89 @@
+#
+# Gamemode - made by WolfyGameYT
+#
+
+
+options:
+     prefix: &3&lGamemode &b&l»
+     pm: &3&lGamemode &b&l» &4You can't do that!
+
+command /gmc [<player>]:
+	aliases: creative
+	permission: gamemode.creative
+	permission message: {@pm}
+	trigger:
+		if argument 1 is not set:
+			set player's gamemode to creative
+			message "{@prefix} &7Set gamemode to &8creative" to sender
+		else:
+			argument 1 is online
+			if sender has permission "gamemode.creative.others":
+				set argument 1's gamemode to creative
+				message "{@prefix} &7Set &8%arg-1%'s &7gamemode to &8creative" to sender
+			else:
+				message "{@pm}" to sender
+
+command /gms [<player>]:
+	aliases: survival
+	permission: gamemode.survival
+	permission message: {@pm}
+	trigger:
+		if argument 1 is not set:
+			set player's gamemode to survival
+			message "{@prefix} &7Set gamemode to &8survival" to sender
+		else:
+			argument 1 is online
+			if sender has permission "gamemode.survival.others":
+				set argument 1's gamemode to survival
+				message "{@prefix} &7Set &8%arg-1%'s &7gamemode to &8survival" to sender
+			else:
+				message "{@pm}" to sender
+
+command /gma [<player>]:
+	aliases: adventure
+	permission: gamemode.adventure
+	permission message: {@pm}
+	trigger:
+		if argument 1 is not set:
+			set player's gamemode to adventure
+			message "{@prefix} &7Set gamemode to &8adventure" to sender
+		else:
+			argument 1 is online
+			if sender has permission "gamemode.adventure.others":
+				set argument 1's gamemode to adventure
+				message "{@prefix} &7Set &8%arg-1%'s &7gamemode to &8adventure" to sender
+			else:
+				message "{@pm}" to sender
+
+command /gmsp [<player>]:
+	aliases: spectator
+	permission: gamemode.spectator
+	permission message: {@pm}
+	trigger:
+		if argument 1 is not set:
+			set player's gamemode to spectator
+			message "{@prefix} &7Set gamemode to &8spectator" to sender
+		else:
+			argument 1 is online
+			if sender has permission "gamemode.spectator.others":
+				set argument 1's gamemode to spectator
+				message "{@prefix} &7Set &8%arg-1%'s &7gamemode to &8spectator" to sender
+			else:
+				message "{@pm}" to sender
+				
+command /gamemode:
+	permission: help.gamemode
+	permission message: {@pm}
+	trigger:
+		send ""
+		send "                  &1&l-------------------"
+		send "                    &b&lGAMEMODE COMMANDS"
+		send "&1&l-----------------------------------------"
+		send "&3/gmc or /creative: &9Sets player's gamemode to creative"
+		send "&3/gmc or /survival: &9Sets player's gamemode to survival"
+		send "&3/gma or /adventure: &9Sets player's gamemode to adventure"
+		send "&3/gmsp or /spectator: &9Sets player's gamemode to spectator"
+		send ""
+		send "&3&lINFO: &9&lAdd a player's name after the command to set someone else's gamemode"
+		send "&1&l-----------------------------------------"
+		send ""
