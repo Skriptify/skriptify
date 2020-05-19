@@ -1,0 +1,42 @@
+options:
+	Minimum-x: -500 #Minimum x of randomtp
+	Maximum-x: 500 #Maximum x of randomtp
+	Minimum-z: -500 #Minimum z of randomtp
+	Maximum-z: 500 #Maximum  x of randomtp
+	
+	cooldown: 5 seconds #formated as (Amount of time) (Seconds, Minutes, days ect...)
+	avoid: water or lava #Avoid spawning formated as (Block) or (Block) ect...
+
+	worlds: "world" #worlds formated as "(World name)" or "(World name)" or "(World name)" ect...
+
+	Permission: randomtp.use #Permission
+	PermissionMessage: &cYou do not have permission to use this command! #No permission message
+	CommandIsNotExecuteableInWorld: &cYou can’t use this command in this world! #Can not execute command in this world message
+	CooldownMessage: &CYou have to wait another %{_cooldown}% &cbefore you can execute this command again! #Cooldown message %{_cooldown}% is the time until the command is executeable again)
+	
+Command RandomTP:
+	aliases: rtp, wild
+	permission: {@Permission}
+	Permission Message: {@PermissionMessage}
+	trigger:	
+		if world is not {@worlds}:
+			send "{@CommandIsNotExecuteableInWorld}"
+		else:
+			if difference between {randomtp::%player%} and now is less than {@cooldown}:
+				set {_cooldown} to {@cooldown}
+				remove difference between {randomtp::%player%} and now from {_cooldown}
+				send "{@CooldownMessage}"
+			else:
+				set {_Randomtp.avoid} to 0
+				while {_Randomtp.avoid} is equal to 0:
+					wait 1 tick
+					set {_loc} to location at random number between {@Minimum-x} and {@Maximum-x}, 255, random number between {@Maximum-z} and {@Minimum-z}
+					while block at {_loc} is air:
+						remove 1 from y-coordinate of {_loc}
+					loop all blocks in radius 1 of {_loc}:
+						if loop-block is not {@avoid}:
+							add 1 to y-coordinate of {_loc}
+							set {_Randomtp.avoid} to 1
+							teleport player to {_loc}
+							set {randomtp::%player%} to now 
+							stop
