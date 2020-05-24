@@ -33,7 +33,7 @@ function Time_Register():
     set {time.types::hour} to "hour"
     set {time.types::day} to "day"
     clear {letters::*}
-    set {_str} to "a,b,c,d,e,f,g,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,/,!,@,##,$,%%,^,*,(,),{,},[,],"",|,;,',`,?"
+    set {_str} to "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,/,!,@,##,$,%%,^,*,(,),{,},[,],"",|,;,',`,?"
     set {letters::*} to {_str} split at ","
 
 function PunishTime_Register():
