@@ -1,0 +1,55 @@
+#   Sell Wands Empowered
+#   Made By Shy#7014 (dm if there are any bugs/issues. Thank you!)
+
+#Config (Mote you can add more just follow the format.)
+options:
+    cactus: 10
+    sugar cane: 10
+    pumpkin: 15
+
+
+command /sellwand [<text>] [<player>] [<text>]:
+    permission: sellwand.admin
+    trigger:
+        if arg 1 is "help":
+            send "&aUsage: /sellwand [give] [player] [multiplier]"
+        else if arg 1 is "give":
+            if arg 2 is a player:
+                if arg 3 is set:
+                    give player blaze rod named "&6&lSellwand" with lore "&aMultiplier: %arg-3%"
+                    send "&aGiven a %arg-3%x sellwand to %arg-2%!"
+                else:
+                    send "&aUsage: /sellwand [give/help] [player] [multiplier]"
+            else:
+                send "&aUsage: /sellwand [give/help] [player] [multiplier]"
+        else:
+            send "&aUsage: /sellwand [give/help] [player] [multiplier]"
+
+command /bal:
+    trigger:
+        send "&aBal: %{balance::%player's uuid%}%"
+
+
+function sell(p: player, c: block):
+    set {_u} to {_p}'s uuid
+    set {_cactus} to number of cactus in {_c}'s inventory
+    set {_cactus} to {_cactus} * {@cactus}
+    set {_cane} to number of sugar cane in {_c}'s inventory
+    set {_cane} to {_cane} * {@sugar cane}
+    set {_pumpkin} to number of pumpkin in {_c}'s inventory
+    set {_pumpkin} to {_pumpkin} * {@pumpkin}
+    remove all cactus, pumpkin and sugar cane from {_c}'s inventory
+    add {_cactus} + {_pumpkin} + {_cane} to {_total}
+    set {_multi} to uncolored line 1 of lore of {_p}'s held item
+    replace all "Multiplier: " in {_multi} with ""
+    set {_multi} to {_multi} parsed as integer
+    set {_total} to {_total} * {_multi}
+    set {balance::%{_u}%} to {_total} + {balance::%{_u}%}
+    send "&aYou have earned $%{_total}% &afrom selling!" to {_p}
+
+
+on right click with a blaze rod:
+    if name of player's held item is "&6&lSellwand":
+        if event-block is a chest:
+            sell(player, clicked block)
+            cancel event
