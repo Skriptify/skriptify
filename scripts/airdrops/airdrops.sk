@@ -1,0 +1,103 @@
+#   Air Drops
+#   Made By Shy#7014 (dm if there are any bugs/issues. Thank you!)
+
+#------------------------------------------READ ME----------------------------------------------------------#
+# As you may know the design aspect of it isin't it's greatest because I didn't spend that much time on it.
+# The delete option in the config is if you want to the airdrop to delete when a new one spawns
+# There is only 1 base command and 3 addons
+# Command List:
+#   /airdop setloot (Set the rewards that you can get from the airdrop.)
+#   /airdrop delete (This deletes every airdrop)
+#   /airdrop list (Sends you a list of every airdrop there is)
+#   /airdrop spawn (Spawns an airdrop)
+# Again you can feel free to dm me if you run into any problems.
+#------------------------------------------READ ME----------------------------------------------------------#
+
+
+#----------------Config------------------#
+options:
+	Minimum-x: -500 
+	Maximum-x: 500 
+	Minimum-z: -500 
+	Maximum-z: 500 
+	rewards: 4
+	cooldown: 15 minutes
+	airdropBlock: ender chest 
+	world: "world"
+	delete: "true" # (Keep it lowercase)
+#------------End of Config--------------#
+
+function Airdrop_Loot(p: player):
+    set {_u} to uuid of {_p}
+    set {_menu} to chest inventory with 6 rows named "Airdrop"
+    set {_slot} to 0
+    loop {Airdrop::items::*}:
+        set slot {_slot} of {_menu} to loop-value
+        add 1 to {_slot}
+    delete {Airdrop::items::*}
+    open {_menu} to {_p}
+    set {inventory::%{_u}%} to "airdrop.items"
+
+
+function Airdrop_Open(p: player):
+    set {_menu} to chest inventory with 3 rows named "Airdrop"
+    loop {@rewards} times:
+        set {_random} to random element out of {Airdrop::items::*}
+        set {_slot} to a random integer between 1 and 26
+        set slot {_slot} of {_menu} to {_random}
+    open {_menu} to {_p}
+    play sound "BLOCK_SHULKER_BOX_OPEN" with volume 2 to {_p}
+
+function Airdrop_Spawn():
+    if {@delete} is "true":
+        execute console command "airdrop delete"
+    else:
+        set {_loc} to location at random integer between {@Minimum-x} and {@Maximum-x}, 255, random integer between {@Maximum-z} and {@Minimum-z} in world {@world}
+        while block at {_loc} is air:
+            remove 1 from y-coordinate of {_loc}
+        set block at {_loc} to {@airdropBlock}
+        set {_x} to x-coordinate of {_loc}
+        set {_y} to y-coordinate of {_loc}
+        set {_z} to z-coordinate of {_loc}
+        add location of block at {_loc} to {airdrops::locations::*}
+        loop all players in world {@world}:
+            send "An airdrop has spawned at &a&l%{_x}%&a, &a&l%{_y}%&a, &a&l%{_z}%" to loop-player
+
+
+command /airdrop [<text>]:
+    permission: airdrop.admin
+    trigger:
+        if arg-1 is "setloot": 
+            Airdrop_Loot(player)
+        else if arg-1 is "spawn":
+            Airdrop_Spawn()
+        else if arg-1 is "list":
+            loop {airdrops::locations::*}:
+                send "%loop-value%"
+        else if arg-1 is "delete":
+            loop {airdrops::locations::*}:
+                set block at loop-value to air
+                clear {airdrops::locations::*}
+                send "&adeleted all airdrops!"
+
+on inventory close:
+    if {inventory::%player's uuid%} is "airdrop.items":
+        set {_items} to 1
+        set {_slot} to 0
+        loop 54 times:
+            if slot {_slot} of current inventory isn't air:
+                set {Airdrop::items::%{_items}%} to slot {_slot} of current inventory
+                add 1 to {_items}
+            add 1 to {_slot}
+        send "&aLoot Saved!"
+    delete {inventory::%player's uuid%}
+
+
+on right click on {@airdropBlock}:
+    if {airdrops::locations::*} contains location of event-block:
+        set block at event-block to air
+        remove location of event-block from {airdrops::locations::*}
+        Airdrop_Open(player)
+
+every {@cooldown} in world {@world}:
+    Airdrop_Spawn()
