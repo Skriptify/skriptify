@@ -1,0 +1,47 @@
+#   Bank Notes Remasterd
+#   Made By Shy#7014 (dm if there are any bugs/issues. Thank you!)
+
+function withdraw(amount: number, p: player):
+    set {_u} to {_p}'s uuid
+    if {_amount} is less than or equal to 0:
+        send "&cError! you can not withdraw less than 0!" to {_p}
+    else if {balance::%{_u}%} >= {_amount}:
+        send "&aWithdrew %{_amount}% from your account!" to {_p}
+        remove {_amount} from {balance::%{_u}%}
+        give {_p} paper named "&6&lBank Note" with lore "&aIssued by: %{_p}%" and "&aAmount: $%{_amount}%"
+    else:
+        send "&cError! Insufficient Balance." to {_p}
+
+function deposit(p: player):
+    set {_u} to {_p}'s uuid
+    set {_amount} to uncolored line 2 of lore of {_p}'s held item
+    replace all "Amount: $" in {_amount} with ""
+    set {_item} to {_p}'s held item
+    remove 1 of {_item} from {_p}
+    set {_amount} to {_amount} parsed as integer
+    add {_amount} to {balance::%{_u}%}
+    send "&a Sucessfully deposited $%{_amount}% &ainto your account!" to {_p}
+
+command /banknote [<text>] [<integer>]:
+    usage: /note help
+    aliases: /note
+    trigger:
+        if arg 1 is "help":
+            send "&aUsage: /note (deposit/withdraw) (amount)"
+        else if arg 1 is "withdraw":
+            if arg 2 is set:
+                withdraw(arg-2, player)
+            else:
+                send "&cError! Please specify an amount."
+        else if arg 1 is "deposit":
+            if player's held item is paper:
+                if name of player's held item is "&6&lBank Note":
+                    deposit(player)
+                else:
+                    send "&cError! You are not holding a banknote."
+            else:
+                send "&cError! You are not holding a banknote."
+
+on right click with paper:
+    if name of player's held item is "&6&lBank Note":
+        deposit(player)
