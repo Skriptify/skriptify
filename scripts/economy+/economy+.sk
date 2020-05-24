@@ -1,0 +1,158 @@
+options:
+  headerbaltopmsg: &6===== BalTop ===== 	# Message above baltop message
+
+  baltopamount: 10 				# how many people it will show in baltop
+
+  footerbaltopmsg: &6===== BalTop ===== 	# Message under baltop message
+
+  currency: $ 					# currency type example: 100 $/ 100 coins
+
+  setbalperm: bal.set 				# Perm to set players balance
+
+  economynotify: bal.notify 			# Perm to get notified on any change in this skript. 
+
+  addbalperm: bal.add 				# Perm to add money to someone's balance.
+
+  removebalperm: bal.remove 			# Perm to remove money from someone's balance.
+
+  resetbalperm: bal.reset 			# Perm to reset everyone's balance
+
+#
+#
+#  We advise you to put this skript in its own file! for maximum efficiency
+#
+# Baltop sorting made by ChrisLP 
+#
+
+command /baltop:
+  trigger:
+    loop {Balance::*}:
+      add 1 to {_size}
+      if {_low.to.high.list::%loop-value%} is not set:
+        set {_low.to.high.list::%loop-value%} to loop-index
+      else:
+        set {_n} to 0
+        loop {_size} times:
+          set {_n} to {_n}+1
+          {_low.to.high.list::%loop-value-1%.%{_n}%} is not set
+          set {_low.to.high.list::%loop-value-1%.%{_n}%} to loop-index
+          stop loop
+    wait 1 tick
+    set {_n} to size of {_low.to.high.list::*}
+    loop {_low.to.high.list::*}:
+      set {_high.to.low.list::%{_n}%} to loop-value
+      set {_n} to {_n}-1
+    wait 1 tick
+    set {_i} to 0
+    send "{@headerbaltopmsg}"
+    loop {_high.to.low.list::*}:
+      add 1 to {_topnumber}
+      set {_player} to "%loop-value%" parsed as offlineplayer
+      send "&7%{_topnumber}% - &c%{_player}% &8» &7%{Balance::%loop-value%}%"
+      add 1 to {_i}
+      if {_topnumber} > {@baltopamount}: #this is top 10 you can change it
+        stop
+    send "{@footerbaltopmsg}"
+
+command balance [<offline player>]:
+  aliases: bal
+  trigger:
+    if arg-1 is set:
+      send "&6%arg-1%'s balance » %{Balance::%arg-1's uuid%}%" to player
+      if {Balance::%arg-1's uuid%} > {Balance::%player's uuid%}:
+        send "&e&l%arg-1% is Richer than You!" to player
+      else if {Balance::%arg-1's uuid%} < {Balance::%player's uuid%}:
+        send "&e&lYou ar Richer than %arg-1%!" to player
+    else:
+      send "&6Your Balance » %{Balance::%player's uuid%}%" to player
+
+command pay [<player>] [<integer>]:
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        if {Balance::%player's uuid%} >= arg-2:
+          if arg-2 > 0:
+            remove arg-2 from {Balance::%player's uuid%}
+            add arg-2 to {Balance::%arg-1's uuid%}
+            send "&aYou have payed %arg-1% &a %arg-2% {@currency}" to player
+            send "&a%player% &a has payed you %arg-2% {@currency}" to arg-1
+          else:
+            send "&cYou may not pay someone 0 or less!" to player
+        else:
+          send "&cInsufficient funds!"
+      else:
+        send "&eUsage /pay (player) (amount)" to player
+    else:
+      send "&eUsage /pay (player) (amount)" to player
+
+command balset [<player>] [<integer>]:
+  aliases: setbalance, balanceset, setbal
+  permission: {@setbalperm}
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        set {Balance::%arg-1's uuid%} to arg-2
+        send "&c%player% has set %arg-1%&c's balance to %arg-2%" to all players where [player input has permission "{@economynotify}"]
+      else:
+        send "&eUsage /balset (player) (amount)" to player
+    else:
+      send "&eUsage /balset (player) (amount)" to player
+
+command baladd [<player>] [<integer>]:
+  aliases: addbal, balanceadd, addbalance
+  permission: {@addbalperm}
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        add arg-2 to {Balance::%arg-1's uuid%}
+        send "&c%player% has added %arg-2% to %arg-1%&c's balance" to all players where [player input has permission "{@economynotify}"]
+      else:
+        send "&eUsage /baladd (player) (amount)" to player
+    else:
+      send "&eUsage /baladd (player) (amount)" to player
+
+command balremove [<player>] [<integer>]:
+  aliases: removebal, balanceremove, removebalance
+  permission: {@removebalperm}
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        remove arg-2 from {Balance::%arg-1's uuid%}
+        send "&c%player% has removed %arg-2% from %arg-1%&c's balance" to all players where [player input has permission "{@economynotify}"]
+      else:
+        send "&eUsage /balremove (player) (amount)" to player
+    else:
+      send "&eUsage /balremove (player) (amount)" to player
+
+command BalReset:
+  aliases: balancereset
+  permission: {@resetbalperm}
+  trigger:
+    open virtual chest inventory with size 3 named "&CReset Balance" to player
+    format gui slot 0,1,2,9,10,11,18,19,20 of player with green wool named "&a&lCONFIRM" with lore "&7&lMay cause some lag" to close:
+      loop all offline players:
+        set {Balance::%loop-offlineplayer's uuid%} to 0
+      send "&aBalance has been reset to 0" to player
+    format gui slot 6,7,8,15,16,17,24,25,26 of player with red wool named "&c&lCANCEL" to close:
+      send "&cBalance Reset has been cancelled" to player
+
+on load:
+  send "&aBalance Skript Has Been reloaded. Use /help Balance to find a list of all commands" to all players where [player input has permission "{@economynotify}"]
+
+on first join:
+  set {Balance::%player's uuid%} to 0
+
+on command "/help Balance":
+  cancel event
+  send "&6Balance Help"
+  send "&6Balance (player): Check Player's balance"
+  send "&6Balset (player) (amount): set Player's balance to a specific amount"
+  send "&6Baladd (player) (amount): add a specific amount to a player's balance"
+  send "&6Balremove (player) (amount): remove a specific amount from a player's balance"
+  send "&6Pay (player) (amount): pay a Player a specific amount from your balance"
+  send "&6BalTop: Check Balance leaderboards"
+  send "&4&lDanger ZONE:"
+  send " "
+  send "&c&lBalReset: Reset everyone's balance"
+  send " "
+  send "&6Balance Help"
