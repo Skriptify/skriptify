@@ -1,0 +1,35 @@
+options:
+  bypass: anticaptcha.bypass
+  kickmessage: &4Failed Captcha
+  chatmessage: &4You May Not send a message till you prove Captcha
+  movemessage: &4You May Not move till you prove Captcha
+  time: 10 
+           # (to kick him if he doesnt answer in this time span counted in seconds) 
+
+on join:
+  if player has permission "{@bypass}":
+    stop
+  else:
+    set {captcha::code::%player's uuid%} to random 8 char string from charset `a-zA-Z0-9`
+    set {captcha::%player's uuid%} to true
+    loop {@time} times:
+      send action bar "&9CAPTCHA CODE: &a&l%{captcha::code::%player's uuid%}%" to player
+      wait 1 second
+    if {captcha::%player's uuid%} is true:
+      kick player due to "{@kickmessage}"
+
+on chat:
+  if {captcha::%player's uuid%} is true:
+    if message is "%{captcha::code::%player's uuid%}%":
+      set {captcha::%player's uuid%} to false
+    else:
+      cancel event
+      send "{@chatmessage}" to player
+
+on any movement:
+  if {captcha::%player's uuid%} is true:
+    cancel event
+    send "{@kickmessage}" to player
+
+on quit:
+  delete {captcha::%player's uuid%}
