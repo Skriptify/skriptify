@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an feature for resources.
+about: Suggest a feature for resources.
 title: "[SUGGESTION]"
 labels: ''
 assignees: ''
