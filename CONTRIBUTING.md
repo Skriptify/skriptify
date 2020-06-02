@@ -39,7 +39,7 @@ Resources are denied because of;
 - Description could be too short. (Minimum 4 sentences)
 
 ## FEATURED
-Each week, 2 resources will be featured on the site.
+Every two weeks, 2 resources will be featured on the site.
 
 **1.** Community Choice
 - Users will be able to vote for their favorite script on a form.
