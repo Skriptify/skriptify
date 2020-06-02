@@ -1,0 +1,373 @@
+# ChatFeelings owo
+
+# -Permissions-
+# chatfeelings.feelingname to give access to a specific feeling (replace feelingname with the name of the feeling)
+# chatfeelings.all to give access to all feelings
+
+options:
+	#  -Feelings-
+	# first option means enabled. true = enabled, false = disabled
+	# feelingsender is the message sent to the person who typed the command
+	# feelingtarget is the message sent to the person mentioned in the command
+	# feelingglobal is the message sent to the whole server
+	
+	#Hug
+	hug: true
+	hugsender: &7You give &a&l%arg 1% &r&7a warm hug. &cAwww &4❤
+	hugtarget: &a&l%player% &r&7gives you a warm hug. &cAwww &4❤
+	hugglobal: &a&l%player% &r&7gave &2&l%arg 1% &r&7a warm hug. &cAwww &4❤
+	#Bite
+	bite: true
+	bitesender: &7You sink your teeth into &c&l%arg 1%&r&7's skin.
+	bitetarget: &c&l%player% &r&7sinks their teeth into your skin.
+	biteglobal: &c&l%player% &r&7sank their teeth into &4&l%arg 1%&r&7''s skin
+	#Punch
+	punch: true
+	punchsender: &7You strike &c&l%arg 1% &r&7with a punch. Ouch!
+	punchtarget: &c&l%player% &r&7strikes you with a punch. Ouch!
+	punchglobal: &c&l%player% &r&7punched &4&l%arg 1% &r&7right in the face.
+	#Murder
+	murder: true
+	murdersender: &7You murder &c&l%arg 1% &r&7and have no regrets.
+	murdertarget: &c&l%player% &r&7just murdered you. Bandaid anyone?
+	murderglobal: &c&l%player% &r&7just murdered &4&l%arg 1%&r&7. &7&lRIP
+	#Boi
+	boi: true
+	boisender: &7You inhale at &e&l%arg 1%&r&7... &6&lBOI
+	boitarget: &e&l%player% &r&7inhales at you... &6&lBOI
+	boiglobal: &e&l%player% &r&7inhales at &6&l%arg 1%&r&7... &6&l&oBOI
+	#Dab
+	dab: true
+	dabsender: &7You freshly dab on &a&l%arg 1%&r&7... &7&oGot'em.
+	dabtarget: &a&l%player% &r&7freshly dabs on you... &7&oGot'em.
+	dabglobal: &a&l%player% &r&7freshly dabs on &2&l%arg 1%&r&7... &7&oGot'em.
+	#Cry
+	cry: true
+	crysender: &7You cry on &b&l%arg 1%&r&7''s shoulder.
+	crytarget: &b&l%player% &r&7cries on your shoulder.
+	cryglobal: &b&l%player% &r&7leans on &3&l%arg 1%&r&7''s shoulder and cries.
+	#Facepalm
+	facepalm: true
+	facepalmsender: &7You facepalm at what &e&l%arg 1% &r&7just said.
+	facepalmtarget: &e&l%player% &r&7facepalmed at what you just said.
+	facepalmglobal: &e&l%player% &r&7facepalms at &6&l%arg 1%&r&7 for being dumb.
+	#Highfive
+	highfive: true
+	highfivesender: &7You give a mighty highfive to &a&l%arg 1%&7.
+	highfivetarget: &a&l%player% &7gives you a mighty highfive.
+	highfiveglobal: &a&l%player% &7gives &2&l%arg 1% &r&7a mighty highfive.
+	#Kiss
+	kiss: true
+	kisssender: &7You give &a&l%arg 1% &r&7a kiss. &cAwww &4❤
+	kisstarget: &a&l%player% &r&7gives you a kiss. &cAwww &4❤
+	kissglobal: &a&l%player% &7gives &2&l%arg 1% &7a kiss. &cAwww &4❤
+	#Lick
+	lick: true
+	licksender: &7You lick &e&l%arg 1% &7like ice-cream. &6Gross!
+	licktarget: &e&l%player% &r&7licks you like ice-cream. &6Gross!
+	lickglobal: &e&l%arg 1% &r&7got licked by &6&l%player%&r&7. &8Gross.
+	#Shake
+	shake: true
+	shakesender: &7You shake &c&l%arg 1%&r&7's entire body.
+	shaketarget: &c&l%player% &r&7shakes your entire body.
+	shakeglobal: &c&l%player% &r&7picks up &4&l%arg 1%&r&7''s body, and shakes it.
+	#Snuggle
+	snuggle: true
+	snugglesender: &7You snuggle &a&l%arg 1% &r&7with love. &cAwww &4❤
+	snuggletarget: &a&l%player% &r&7snuggles you with love. &cAwww &4❤
+	snuggleglobal: &a&l%player% &r&7snuggles &2&l%arg 1% &r&7them with hugs. &cAwww &4❤
+	#Yell
+	yell: true
+	yellsender: &7You yell at &c&l%arg 1%&r&7 at the top of your lungs.
+	yelltarget: &c&l%player% &r&7yells at you from the top of their lungs.
+	yellglobal: &c&l%player% &r&7yells right at &4&l%arg 1% &r&7from the top of their lungs.
+	#Poke
+	poke: true
+	pokesender: &7You poked &e&l%arg 1%&7. Maybe they're on vacation?
+	poketarget: &e&l%player% &r&7has poked you. Anyone there?
+	pokeglobal: &e&l%arg 1% &r&7was poked by &6&l%player%&r&7. &7&oAnyone home?
+	#Slap
+	slap: true
+	slapsender: &7You slap &c&l%arg 1% &r&7with some spaghetti.
+	slaptarget: &c&l%player% &r&7slaps you with some spaghetti.
+	slapglobal: &c&l%arg 1% &r&7was slapped by &4&l%player%&r&7.
+	#Stab
+	stab: true
+	stabsender: &7You stab &c&l%arg 1% &r&7with a knife. Got Bandaids?
+	stabtarget: &c&l%player% &r&7grabs a knife and stabs you. Got Bandaids?
+	stabglobal: &c&l%player% &r&7grabs a knife and stabs &4&l%arg 1%&r&7.
+	#Pat
+	pat: true
+	patsender: &7You gently pat &a&l%arg 1%&r&7's head for being good.
+	pattarget: &a&l%player% &r&7gently pats your head for being good.
+	patglobal: &a&l%player% &r&7gently pats &2&l%arg 1%&r&7's head for being good.
+	#Scorn
+	scorn: true
+	scornsender: &7You scorn &c&l%arg 1% &r&7for what they've done.
+	scorntarget: &c&l%player% &r&7scorns you for what you've done.
+	scornglobal: &c&l%player% &r&7scorns &4&l%arg 1% &r&7for what they've done.
+	#Stalk
+	stalk: true
+	stalksender: &7You carefully stalk &e&l%arg 1%&r&7, &7&oHeh Heh.
+	stalktarget: &e&l%player% &r&7stalks you from a nearby tree.
+	stalkglobal: &e&l%player% &r&7stalks &6&l%arg 1% &r&7from a nearby tree.
+	
+command /hug [<player>]:
+	trigger:
+		if {@hug} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.hug":
+				if arg 1 is set:
+					send "{@hugsender}" to player
+					send "{@hugtarget}" to arg 1
+					broadcast "{@hugglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were hugging..."
+			else:
+				send "&cSorry, you can not do that :("
+
+command /bite [<player>]:
+	trigger:
+		if {@bite} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.bite":
+				if arg 1 is set:
+					send "{@bitesender}" to player
+					send "{@bitetarget}" to arg 1
+					broadcast "{@biteglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were biteing..."
+			else:
+				send "&cSorry, you can not do that :("
+
+command /punch [<player>]:
+	trigger:
+		if {@punch} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.punch":
+				if arg 1 is set:
+					send "{@punchsender}" to player
+					send "{@punchtarget}" to arg 1
+					broadcast "{@punchglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were punching..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /murder [<player>]:
+	trigger:
+		if {@murder} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.murder":
+				if arg 1 is set:
+					send "{@murdersender}" to player
+					send "{@murdertarget}" to arg 1
+					broadcast "{@murderglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were murdering..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /boi [<player>]:
+	trigger:
+		if {@boi} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.boi":
+				if arg 1 is set:
+					send "{@boisender}" to player
+					send "{@boitarget}" to arg 1
+					broadcast "{@boiglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were boiing..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /dab [<player>]:
+	trigger:
+		if {@dab} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.dab":
+				if arg 1 is set:
+					send "{@dabsender}" to player
+					send "{@dabtarget}" to arg 1
+					broadcast "{@dabglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were dabbing..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /cry [<player>]:
+	trigger:
+		if {@cry} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.cry":
+				if arg 1 is set:
+					send "{@crysender}" to player
+					send "{@crytarget}" to arg 1
+					broadcast "{@cryglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were crying..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /facepalm [<player>]:
+	trigger:
+		if {@facepalm} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.facepalm":
+				if arg 1 is set:
+					send "{@facepalmsender}" to player
+					send "{@facepalmtarget}" to arg 1
+					broadcast "{@facepalmglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were facepalming..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /highfive [<player>]:
+	trigger:
+		if {@highfive} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.highfive":
+				if arg 1 is set:
+					send "{@highfivesender}" to player
+					send "{@highfivetarget}" to arg 1
+					broadcast "{@highfiveglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were highfiveing..."
+			else:
+				send "&cSorry, you can not do that :("
+
+command /kiss [<player>]:
+	trigger:
+		if {@kiss} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.kiss":
+				if arg 1 is set:
+					send "{@kisssender}" to player
+					send "{@kisstarget}" to arg 1
+					broadcast "{@kissglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were kissing..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /lick [<player>]:
+	trigger:
+		if {@lick} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.lick":
+				if arg 1 is set:
+					send "{@licksender}" to player
+					send "{@licktarget}" to arg 1
+					broadcast "{@lickglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were licking..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /shake [<player>]:
+	trigger:
+		if {@shake} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.shake":
+				if arg 1 is set:
+					send "{@shakesender}" to player
+					send "{@shaketarget}" to arg 1
+					broadcast "{@shakeglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were shaking..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /snuggle [<player>]:
+	trigger:
+		if {@snuggle} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.snuggle":
+				if arg 1 is set:
+					send "{@snugglesender}" to player
+					send "{@snuggletarget}" to arg 1
+					broadcast "{@snuggleglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were snuggling..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /yell [<player>]:
+	trigger:
+		if {@yell} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.yell":
+				if arg 1 is set:
+					send "{@yellsender}" to player
+					send "{@yelltarget}" to arg 1
+					broadcast "{@yellglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were yelling..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /poke [<player>]:
+	trigger:
+		if {@poke} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.poke":
+				if arg 1 is set:
+					send "{@pokesender}" to player
+					send "{@poketarget}" to arg 1
+					broadcast "{@pokeglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were pokeing..."
+			else:
+				send "&cSorry, you can not do that :("
+				
+command /slap [<player>]:
+	trigger:
+		if {@slap} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.slap":
+				if arg 1 is set:
+					send "{@slapsender}" to player
+					send "{@slaptarget}" to arg 1
+					broadcast "{@slapglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were slapping..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /stab [<player>]:
+	trigger:
+		if {@stab} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.stab":
+				if arg 1 is set:
+					send "{@stabsender}" to player
+					send "{@stabtarget}" to arg 1
+					broadcast "{@stabglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were stabbing..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /pat [<player>]:
+	trigger:
+		if {@pat} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.pat":
+				if arg 1 is set:
+					send "{@patsender}" to player
+					send "{@pattarget}" to arg 1
+					broadcast "{@patglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were patting..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /scorn [<player>]:
+	trigger:
+		if {@scorn} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.scorn":
+				if arg 1 is set:
+					send "{@scornsender}" to player
+					send "{@scorntarget}" to arg 1
+					broadcast "{@scornglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were scorning..."
+			else:
+				send "&cSorry, you can not do that :("
+			
+command /stalk [<player>]:
+	trigger:
+		if {@stalk} = true:
+			if player has permission "chatfeelings.all" or "chatfeelings.stalk":
+				if arg 1 is set:
+					send "{@stalksender}" to player
+					send "{@stalktarget}" to arg 1
+					broadcast "{@stalkglobal}"
+				else:
+					send "&cSeems like you forgot to say who you were stalking..."
+			else:
+				send "&cSorry, you can not do that :("
