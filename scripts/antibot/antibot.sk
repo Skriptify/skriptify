@@ -1,0 +1,39 @@
+options:
+  bypass: antibot.bypass
+  kickmessage: &c&lKicked for Failing Captcha
+  chatmessage: &4You May not send messages till you prove antibot captcha
+  movemessage: &4You May not move till you prove antibot captcha
+
+on join:
+  if player has permission "{@bypass}":
+    stop
+  else:
+    open virtual chest inventory with size 6 named "&aClick The Green Wool!!!!" to player
+    set {_e} to 0
+    set {antibot::%player' uuid%} to true
+    set {_e} to random integer between 0 and 53
+    loop 53 times:
+      if {_e} = loop-value:
+        wait 1 tick
+        format gui slot {_e} of player with green wool named "&A&LCLICK ME" to close:
+          stop
+      else:
+        wait 1 tick
+        format gui slot {_e} of player with red wool named "&f&lDO NOT CLICK ME!" to run:
+          kick player due to "{@kickmessage}"
+    wait 5 seconds
+    kick player due to "{@kickmessage)"
+
+on chat:
+  if {antibot::%player's uuid%} is true:
+    cancel event 
+    send "{@chatmessage}"
+
+on inventory close:
+  if {antibot::%player's uuid%} is true:
+    kick player due to "{@kickmessage}"
+
+on any movement:
+  if {antibot::%player's uuid%} is true:
+    cancel event 
+    send "{@movemessage}"
