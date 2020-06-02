@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Report a bug/issue with a script on our website.
-title: "[BUG]"
+title: "[RESOURCE BUG]"
 labels: ''
 assignees: ''
 
