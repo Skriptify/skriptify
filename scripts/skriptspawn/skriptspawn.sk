@@ -1,8 +1,14 @@
-options:
-	delay: 3 seconds #Spawn delay, in seconds
-	cooldown: 15 seconds #Cooldown to process /spawn command, in seconds
+# AUTHOR: 3meraldK
+# VERSION: 1.1
+
+options: #Remember that messages have to be placed between double quotes.
+	delay: 3  #Spawn delay, in seconds
+	cooldown: 15 #Cooldown to process /spawn command, in seconds
 	safety: true #Safety mode - script finds the highest block and teleports there if it's set to true.
 	move: true #If it's true teleportation will be canceled if player moves.
+	spawnjoin: false #If it's set to true player will be teleported to spawn each every join.
+	spawndeath: true #If it's set to true player will be teleported to spawn each every death.
+	firstspawn: true #New player will be teleported to spawn if it's set (/setspawn) and if this option is set to true
 	
 	perm: essentials.setspawn #Permission to use /setspawn
 	spawnperm: essentials.spawn #Permission to use /spawn
@@ -11,15 +17,46 @@ options:
 	spawnsetmsg: "&7Spawn has been set to &c%player's location%" #Message if an admin set a spawn
 	tpmsg: "&7Successfully teleported you to spawn!" #Message if player teleports to spawn
 	movemsg: "&cError: &7Teleportation canceled due to a move!" #Message if player moves, if 'move' is set to true
+	nospawnmsg: "&cError: &7Spawn has been not set yet!" #Message if no spawn is set
+	delspawnmsg: "&7Spawn has been &cdeleted!" #Message if /delspawn command was executed
+	
+	welcoming: true #Server will broadcast a welcome message for new players if it's set to true
+	welcomemsg: "&7Welcome, &a%player% &7to the server!" #Message on first join to everyone
+	
+on first join:
+	if {@welcoming} is true:
+		set join message to {@welcomemsg}
+	if {@firstspawn} is true:
+		spawn(player)
+		
+on join:
+	if {@spawnjoin} is true:
+		spawn(player)
+		
+on respawn:
+	wait 1 tick
+	if {@spawndeath} is true:
+		spawn(player)
 	
 function spawn(p: player):
-	if {@safety} is true:
-		set {_y} to highest block at {spawn.location}
-		teleport {_p} to block above {_y}
-	else:
-		teleport {_p} to {spawn.location}
-	set {spawn.%{_p}%.lastused} to now
-	send {@tpmsg} to {_p}
+	if {spawn.location} is set:
+		if {@safety} is true:
+			set {_y} to highest block at {spawn.location}
+			teleport {_p} to block above {_y}
+		else:
+			teleport {_p} to {spawn.location}
+		set {spawn.%{_p}%.lastused} to now
+		send {@tpmsg} to {_p}
+		
+command /delspawn:
+	permission: {@perm}
+	permission message: {@permsg}
+	trigger:
+		if {spawn.location} is set:
+			delete {spawn.location}
+			send {@delspawnmsg}
+		else:
+			send {@nospawnmsg}
 	
 	
 command /setspawn:
@@ -33,18 +70,23 @@ command /spawn:
 	permission: {@spawnperm}
 	permission message: {@permsg}
 	trigger:
-		set {_waited} to difference between {spawn.%player%.lastused} and now
-		if {_waited} is less than {@cooldown}:
-			send "&cError: &7You have to wait %difference between {@cooldown} and {_waited}% &7to teleport to spawn."
+		if {spawn.location} isn't set:
+			send {@nospawnmsg}
 			stop
-		if {@move} is true:
-			send "&7Wait &a{@delay} &7to teleport and &cdon't move!" # You can edit message there
-		else:
-			send "&7Wait &a{@delay} &7to teleport!" # You can edit message there
+		set {_waited} to difference between {spawn.%player%.lastused} and now
+		if {_waited} is less than {@cooldown} seconds:
+			send "&cError: &7You have to wait %difference between {@cooldown} seconds and {_waited}% &7to teleport to spawn."
+			stop
+			
+		if {@delay} > 0:
+			if {@move} is true:
+				send "&7Wait &a{@delay} &aseconds &7to teleport and &cdon't move!" # You can edit message there
+			else:
+				send "&7Wait &a{@delay} &aseconds &7to teleport!" # You can edit message there
 		set {_pX} to round(player's x-coords)
 		set {_pY} to round(player's y-coords)
 		set {_pZ} to round(player's z-coords)
-		wait {@delay}
+		wait {@delay} seconds
 		if {@move} is true:
 			if round(player's x-coords) is {_pX}: # Rounding it allows to move a little only, like in EssentialsSpawn
 				if round(player's y-coords) is {_pY}:
@@ -52,9 +94,12 @@ command /spawn:
 						spawn(player)
 					else:	
 						send {@movemsg}
+						stop
 				else:
 					send {@movemsg}
+					stop
 			else:
 				send {@movemsg}
+				stop
 		else:
 			spawn(player)
