@@ -1,0 +1,71 @@
+
+Save New Duplicate & Edit Just Text
+# Private Vaults by MrScopes
+# Version 1.0
+
+# max pv amount is 100
+# add pvs by giving them the permission `pv.<number>`
+# make sure the users only have 1 permission node for pv.<number>
+# give your staff the infinite pv's permission so they can access all pvs of other users
+
+options:
+
+	no pvs: &cYou have no vaults.
+	not enough pvs: &cYou only have %pvAmount(player)% &cvaults.
+
+	open others: pv.others
+	infinite pvs: pv.infinite
+
+#
+#
+#
+
+function pvAmount(p: player) :: integer:
+	return 100 if {_p} has permission "{@infinite pvs}"
+	loop {_p}'s permissions:
+		if loop-value starts with "pv.":
+			set {_pvAmount::*} to split loop-value at "."
+			({_pvAmount::2} parsed as integer) is set
+			set {_pvs} to {_pvAmount::2}
+
+	set {_pvs} to 100 if {_pvs} >= 100
+	return ({_pvs} parsed as integer)
+
+command /pv [<integer=1>] [<offline player=%player%>]:
+	trigger:
+		if pvAmount(player) isn't set:
+			send "{@no pvs}"
+		else:
+
+			set {_player} to arg 2
+			set {_player} to player if player doesn't have permission "{@open others}"
+
+			set {_vault number} to arg 1
+
+			if arg 1 > pvAmount(player):
+				set {_vault number} to pvAmount(player)
+				send "{@not enough pvs}"
+
+			open chest inventory with 5 rows named "&8%{_player}% ##%{_vault number}%" to player
+			set {opened::%player%} to {_player}
+			wait 1 tick
+			set {_num} to 0
+			loop {vaultItems::%{_player}%::%{_vault number}%::*}:
+				set slot {_num} of player's current inventory to loop-value
+				add 1 to {_num}
+		   
+on inventory open:
+	{opened::%player%} is set
+	cancel event
+	delete {opened::%player%}
+					   
+on inventory close:
+	{opened::%player%} is set
+	set {_inv::*} to split uncolored inventory name of player's current inventory at " "
+	set {_p} to ({_inv::1} parsed as offline player)
+	set {_n} to {_inv::2}
+	replace all "##" with "" in {_n}
+	set {_n} to {_n} parsed as integer
+	loop 54 times:
+		set {vaultItems::%{_p}%::%{_n}%::%loop-number - 1%} to slot "%loop-number - 1%" parsed as an integer of current inventory of player
+	delete {opened::%player%}
