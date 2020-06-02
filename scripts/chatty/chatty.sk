@@ -1,0 +1,119 @@
+#
+# Chatty - made by WolfyGameYT
+#
+# INFO: If you don't want one of these, just remove that part of the script (updating soon)
+#
+
+
+options:
+	bcprefix: &8&l[&5&lAnnouncement&8&l]
+	serverprefix: &3&lChatty &b&l»
+	pm: &3&lChatty &b&l» &4You can't do that!
+	
+command /chattyinfo:
+	permission: chatty.info
+	permission message: {@pm}
+	trigger:
+		send ""	 
+		send "     &1&l----------"
+		send "      &b&lInformation"
+		send "&1&l----------------"
+		send "&3Script Name: &9Chatty"
+		send "&3Creator: &9WolfyGameYT"		
+		send "&1&l----------------"	
+		send ""
+	
+# vvv ANNOUNCEMENT vvv
+command /bc [<world>] [<text>]:
+	permission: chatty.broadcast
+	permission message: {@pm}
+	trigger:
+		if arg-2 is not set:
+			send "{@serverprefix} &cPlease type something!"
+		if arg-2 is set:
+			if arg-1 is not set:
+				broadcast "{@bcprefix} &f%coloured arg-2%"	
+		if arg-1 is set:		
+			broadcast "{@bcprefix} &f%coloured arg-2%" to arg-1
+			if player has permission "sk.broadcast.seeall":
+				send "{@bcprefix} &d&l(%arg-1%&d&l) &f%coloured arg-2%"
+
+command /broadcast [<world>] [<text>]:
+	permission: chatty.broadcast
+	permission message: {@pm}
+	trigger:
+		if arg-2 is not set:
+			send "{@serverprefix} &cPlease type something!"
+		if arg-2 is set:
+			if arg-1 is not set:
+				broadcast "{@bcprefix} &f%coloured arg-2%"	
+		if arg-1 is set:		
+			broadcast "{@bcprefix} &f%coloured arg-2%" to arg-1
+			if player has permission "sk.broadcast.seeall":
+				send "{@bcprefix} &d&l(%arg-1%&d&l) &f%coloured arg-2%"
+				
+# vvv MUTECHAT vvv		
+command /talkpower <text> <player>:
+	permission: chat.mute.talkpower
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if arg-2 is not set:
+				send "{@serverprefix} &cPlease insert a username!" 
+		if arg-2 is set:
+			if arg-1 is not "on" or "off" or "check":
+				send "{@serverprefix} &cPlease insert &c&lon&c, &c&loff&c&c, or &c&lcheck&c!"
+		if arg-1 is "on":
+			if arg-2 is set:
+				send "{@serverprefix} &7You're chat mute bypass has been &8enabled" to arg-2
+				make console execute "/pex user %arg-2% add chat.mute.bypaass"
+		if arg-1 is "off":
+			if arg-2 is set:
+				send "{@serverprefix} &7You're chat mute bypass has been &8disabled" to arg-2
+				make console execute "/pex user %arg-2% remove chat.mute.bypass"
+		if arg-1 is "check":	
+			if arg-2 is set:
+				if arg-2 has permission "chat.mute.bypass":
+					send "{@serverprefix} &8%arg-2% &7has chat bypass &8enabled"
+				else if arg-2 does not have permission "chat.mute.bypass":	
+					send "{@serverprefix} &8%arg-2% &7has chat bypass &8disabled"
+				
+command /mutechat:
+	permission: chat.mute
+	permission message: {@pm}
+	trigger:
+		if {Globalchat} is not set:
+			set {Globalchat} to true
+			broadcast "{@serverprefix} &7Chat has been muted by &8%player%"
+			stop trigger
+
+		if {Globalchat} is set:
+			clear {Globalchat}
+			broadcast "{@serverprefix} &7Chat has been unmuted by &8%player%"
+
+on chat:
+	if {Globalchat} is true:
+		if player has permission "chat.mute.bypass":
+			stop trigger
+		else:
+			cancel event
+			send "{@serverprefix} &7Chat is muted"
+			
+# vvv CLEARCHAT vvv			
+command /clearchat:
+	permission: chatty.clearchat
+	permission message: {@pm}
+	trigger:
+		loop 1000 times:
+			broadcast ""
+		broadcast "{@serverprefix} &7Chat cleared by &8%player%"	
+
+# vvv CENSORED vvv		
+on chat:
+	if message contains "censoredwordexample1" or "censoredwordexample2" or "censoredwordexample3":
+		cancel the event
+		message "&4(!) &cYou can't say that &4(!)"
+	
+# vvv CHATFORMAT (might show an error if you're using the skunity parser, but is should still work) vvv	
+on chat:
+	set chat format to "%player's prefix%%player% %player's suffix%&e»&f %colored message%"
