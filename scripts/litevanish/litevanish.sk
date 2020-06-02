@@ -1,0 +1,38 @@
+#LiteVanish by block of grass.
+command /vanish:
+  permission: skript.vanish
+  permission message: &7[&aLitevanish&7] &fYou do not have permission to do this!
+  aliases: /v
+  trigger:
+    if {var} is false:
+#change these groups to ones you have or remove groups u dont have
+      hide player from all players where [input's group = "default"]
+      hide player from all players where [input's group = "vip"]
+      hide player from all players where [input's group = "vip+"]
+      hide player from all players where [input's group = "Group_name"]
+      hide player from all players where [input's group = "Group_name"]
+      send "&7[&aLitevanish&7] &fYou are now vanished!" to player
+      set {var} to true
+    else if {var} is not set:
+#change these groups to ones you have or remove groups u dont have
+      hide player from all players where [input's group = "default"]
+      hide player from all players where [input's group = "vip"]
+      hide player from all players where [input's group = "vip+"]
+      hide player from all players where [input's group = "Group_name"]
+      hide player from all players where [input's group = "Group_name"]
+      send "&7[&aLitevanish&7] &fYou are now vanished!" to player
+      set {var} to true
+    else if {var} is true:
+      reveal player from all players
+      execute console command "effect clear %player%"
+      send "&7[&aLitevanish&7] &fYou are no longer vanished!" to player
+      set {var} to false
+
+on player join:
+  if {var} is true:
+#change these groups to ones you have or remove groups u dont have
+    hide player from all players where [input's group = "default"]
+    hide player from all players where [input's group = "vip"]
+    hide player from all players where [input's group = "vip+"]
+    hide player from all players where [input's group = "Group_name"]
+    hide player from all players where [input's group = "Group_name"]
