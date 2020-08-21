@@ -1,0 +1,174 @@
+options:
+	permission: report.Admin   # Permission
+	Prefix: &6Server &7        # Prefix
+	NoPermMessage: &cYou don't have the permissions to use this Command!
+
+	cooldown: 15 seconds       # Cooldown, so people cant spam it
+	CooldownMessage: &7Please wait &7[&c%remaining time%&7]   
+	CooldownBypass: report.bypass
+
+command /report [<offline player>] [<text>]:
+	cooldown: {@cooldown}
+	cooldown message: {@CooldownMessage}
+	cooldown bypass: {@CooldownBypass}
+	trigger:
+		if arg-1 is not set:
+			send "&cUsage: /report <player> <reason>"
+		else:
+			if arg-2 is not set:
+				send "&cUsage: /report <player> <reason>"
+			else: 
+				set {_hasPlayed} to 1 if arg-1 has played before
+				set {_hasPlayed} to 1 if arg-1 is online
+				if {_hasPlayed} is set:
+					add arg-1 to {reports::list::*} if {reports::list::*} does not contain arg-1
+					add arg-2 to {reports::%arg-1%::reason::*}
+					add player to {reports::%arg-1%::reporter::*}
+					add now to {reports::%arg-1%::time::*}
+					set {reports::%arg-1%::last} to now
+					set {_p} to player
+					
+					#Report Message:
+					send "{@Prefix} &7You have reported [%arg-1%&7]" 
+					send "{@Prefix} [%player%&7] &7has reported [&c%arg-1%&7] &7[<command:/reports>&aClick me<reset>&7]" to all players where [input has permission "{@permission}"]
+				else:
+					send "{@Prefix} This Player has never played here before"
+
+
+command /reports [<offline player>]:
+	trigger:
+		if player has permission "{@permission}":
+			if arg-1 is offline player:
+				reports(player,arg-1,1)
+			else:
+				menu(player,1)
+		else:
+			send "{@NoPermMessage}"
+			send "&7[&cReport&7] &cMade by Sorbon"
+
+			
+function open(p:player,n:string):
+	open virtual chest inventory with size 6 named "%{_n}%" to {_p}
+	format gui slot (all numbers between 0 and 54) of {_p} with light gray stained glass pane named "" to do nothing
+	format gui slot 0,1,2,3,4,5,6,7,8,36,37,38,39,40,41,42,43 and 44 of {_p} with gray stained glass pane named "" to do nothing
+
+function fix(o:objects) :: objects:
+	loop {_o::*}:
+		add loop-value to {_n::*}
+	return reversed {_n::*}
+	
+	
+# This is super weird, I have to fix that in another update (sorry)
+#
+#
+#   If you have a better version of this, pls contact me :D
+function removePlayer(p:player):
+	remove {_p} from {reports::list::*}
+	set {_list::*} to {reports::list::*}
+	clear {reports::list::*}
+	loop {_list::*}:
+		add loop-value to {reports::list::*}
+		
+		
+function delete(p:player,r:player,i:integer):
+	if size of {reports::%{_r}%::reason::*} = 1:
+		removePlayer({_r})
+		clear {reports::%{_r}%::*}
+		menu({_p},1)
+		stop
+	set {_reason::*} to reversed {reports::%{_r}%::reason::*}
+	set {_reporter::*} to reversed {reports::%{_r}%::reporter::*}
+	set {_time::*} to reversed {reports::%{_r}%::time::*}
+	remove {_reason::%{_i}%} from {_reason::*}
+	remove {_reporter::%{_i}%} from {_reporter::*}
+	remove {_time::%{_i}%} from {_time::*}
+	set {reports::%{_r}%::reason::*} to fix({_reason::*})
+	set {reports::%{_r}%::reporter::*} to fix({_reporter::*})
+	set {reports::%{_r}%::time::*} to fix({_time::*})
+	reports({_p},{_r},1)
+	
+
+function reverse(o:objects) :: objects:
+	return reversed {_o::*}
+function reports(p:player,r:player,page:number):
+	open({_p},"Reports")
+	format gui slot 4 of {_p} with skull of {_r} named "&c%{_r}%" to do nothing
+	format gui slot 51 of {_p} with ender pearl named "&cTeleport" to run:
+		if {_r} is online:
+			teleport {_p} to {_r}
+		else:
+			send "{@Prefix}&cUser is not online"
+	format gui slot 49 of {_p} with book named "&cBack to Reports" to run function menu({_p},1)
+	format gui slot 47 of {_p} with barrier named "&cDelete all Reports" to run:
+		verify({_p},{_r},-1)
+		
+	if {_page} > 1:
+		format gui slot 45 of {_p} with arrow to run:
+			set {_y} to {_page} - 1
+			reports({_p},{_r},{_y})
+			
+	set {_reason::*} to reversed {reports::%{_r}%::reason::*}
+	set {_reporter::*} to reversed {reports::%{_r}%::reporter::*}
+	set {_time::*} to reversed {reports::%{_r}%::time::*}
+	loop {_reason::*}:
+		set {_b} to (loop-index parsed as number) - (27*({_page}-1))+8
+		if ({_b}) is between 9 and 35:
+			set {_loop} to loop-index parsed as integer
+			format gui slot {_b} of {_p} with paper named "&6Report ##%loop-index%" with lore "","&7Reason: ", split({_reason::%loop-index%}),"", "&7Reported by: %{_reporter::%loop-index%}%" and "&7Date: %{_time::%loop-index%}%" to run:
+				verify({_p},{_r},{_loop})
+		if {_b} > 35:
+			format gui slot 53 of {_p} with arrow to run:
+				set {_x} to ({_page} + 1)
+				reports({_p},{_r},{_x})
+			exit loop
+function verify(p:player,p2:player,i:integer):
+	open virtual chest inventory with size 3 named "Do you want to delete the report/s?" to {_p}
+	format gui slot (all numbers between 0 and 26) of {_p} with light gray glass pane named ""
+	format gui slot 10 and 11 of {_p} with lime glass pane named "&aYES" to run:
+		delete({_p},{_p2},{_i}) if {_i} > -1
+		if {_i} < 0:
+			clear {reports::%{_p2}%::*}
+			removePlayer({_p2})
+		menu({_p},1)
+		
+	format gui slot 15 and 16 of {_p} with red glass pane named "&cNO" to run:
+		menu({_p},1)
+		
+	format gui slot 13 of {_p} with paper named "&cAre you sure?"  with lore "&7Are you sure you want" and "&7to delete the report?" to do nothing
+		
+# i know its weird, but it works xD
+function split(list:string) :: strings:
+	set {_list::*} to {_list} split at " "
+	set {_n} to "&7"
+	loop {_list::*}:
+		set {_m} to loop-value
+		while length of {_m} > 30:
+			set {_n} to  "%{_n}% %first (30 - length of {_n}) characters of {_m}%"
+			add {_n} to {_n::*}
+			set {_n} to "&7"
+			replace all first 30 characters of  {_m} with "" in {_m}
+		set {_n} to "%{_n}% %{_m}%"
+		if length of {_n} > 30:
+			add {_n} to {_n::*}
+			set {_n} to "&7"	
+	add {_n} to {_n::*} if {_n} is not ""
+	return {_n::*}
+
+		
+function menu(p:player,page:number):
+	open({_p},"Reports Page %{_page}%")
+	format gui slot 49 of {_p} with barrier named "&cClose" to run:
+		close {_p}'s inventory
+	if {_page} > 1:
+		format gui slot 45 of {_p} with arrow to run:
+			set {_y} to {_page} - 1
+			reports({_p},{_r},{_y})
+	loop {reports::list::*}:
+		set {_b} to (loop-index parsed as number) - (27*({_page}-1))+8
+		if ({_b}) is between 9 and 35:
+			format gui slot {_b} of {_p} with skull of loop-value named "&6%loop-value%" with lore "&7Reports: %size of {reports::%loop-value%::reason::*}%","","&7Last Report: %{reports::%loop-value%::last}%" and "&7From: %{reports::%loop-value%::reporter::%loop-index%}%"  to run function reports({_p},loop-value,1)
+		if {_b} > 35:
+			format gui slot 53 of {_p} with arrow to run:
+				add 1 to {_page}
+				menu({_p},{_page})
+			exit loop
