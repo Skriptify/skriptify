@@ -1,0 +1,149 @@
+#AltMaster made by: SH4D03
+#Dm SH4D03#7511 on discord if you encounter any issues
+#Do /alts for a list of available commands
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#HARD CODE
+#DO NOT EDIT if you don't know what you are doing
+on join:
+	if {Alts::%player's uuid%::*} does not contain player's ip:
+		add player's ip to {Alts::%player's uuid%::*}
+	if {Alts::%player's ip%::*} does not contain player's uuid:
+		add player's uuid to {Alts::%player's ip%::*}
+	if {Alts::%player's ip%::Restriction} is set:
+		if {Alts::%player's ip%::Restriction} != player's uuid:
+			set {_player} to {Alts::%player's ip%::Restriction} parsed as offline player
+			kick player due to "&cYour IP has been restricted to the account: &4%{_player}%"
+			loop all players where [input has permission "altmaster"]:
+				if {Alts::%loop-player's uuid%::Notify} is not set:
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to loop-player
+					send "   &c%player%&7 was kicked for joining" to loop-player
+					send "   &cwith a restricted alt!" to loop-player
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to loop-player
+	if size of {Alts::%player's ip%::*} > 1:
+		loop all players where [input has permission "altmaster"]:
+			if {Alts::%loop-player's uuid%::Notify} is not set:
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to loop-player
+				send "   &4%player%&7 has joined and they have alts!" to loop-player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to loop-player
+
+
+
+command /alts [<offlineplayer>] [<text>]:
+	permission: altmaster
+	trigger:
+		if arg-1 is "toggle" or "Toggle":
+			if {Alts::%player's uuid%::Notify} is set:
+				delete {Alts::%player's uuid%::Notify}
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				send " &7Alt notifications toggled &a&lON" to player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+			else:
+				set {Alts::%player's uuid%::Notify} to true
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				send " &7Alt notifications toggled &c&lOFF" to player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+			stop
+		else if arg-1 is "reset" or "Reset":
+			if difference between {Alts::%player's uuid%::ResetAll} and now < 10 seconds:
+				delete {Alts::*}
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				send " &cAll Altmaster data was deleted" to player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				delete {Alts::%player's uuid%::ResetAll}
+			else:
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				send " &cThis will delete all Altmaster data for all players" to player
+				send " &cRun the command again within 10 seconds" to player
+				send " &cin order to clear alt data" to player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				set {Alts::%player's uuid%::ResetAll} to now
+			stop
+
+
+		if arg-1 is set:
+			set {_player} to arg-1
+			set {_ip} to {_player}'s ip
+			if {_ip} is set:
+				if arg-2 is "restrict" or "Restrict":
+					if {Alts::%{_ip}%::Restriction} != {_player}'s uuid:
+						set {Alts::%{_ip}%::Restriction} to {_player}'s uuid
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+						send "      &7Successfully restricted IP:" to player
+						send "      &4%{_ip}%" to player
+						send "      &7To &4%{_player}%" to player
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+					else:
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+						send "      &cThis IP is already restricted" to player
+						send "      &cto %{_player}%" to player
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				else if arg-2 is "unrestrict" or "Unrestrict":
+					if {Alts::%{_ip}%::Restriction} is set:
+						delete {Alts::%{_ip}%::Restriction} 
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+						send "      &7Successfully unrestricted IP:" to player
+						send "      &4%{_ip}%" to player
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+					else:
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+						send "      &cThis IP is not restricted" to player
+						send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				else if arg-2 is "reset" or "Reset" or "Clear" or "clear":
+					delete {Alts::%{_ip}%::*}
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+					send "      &7All Alt Data was cleared" to player
+					send "      &7for the IP:" to player
+					send "      &4%{_ip}%:" to player
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				else if arg-2 is "history" or "History" or "previous" or "Previous":
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+					send " " to player
+					send "&4&l  Player: &7%{_player}% " to player
+					loop {Alts::%player's uuid%::*}:
+						set {_ip} to loop-value
+						send "  &7- &4%{_ip}%" to player
+					send " " to player
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				else:
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+					send " " to player
+					send "&4&l  IP: &7%{_ip}% " to player
+					set {_restriction} to {Alts::%{_ip}%::Restriction} parsed as offline player ? "Unrestricted"
+					send "&4&l  Restriction: &7%{_restriction}% " to player
+					loop {Alts::%{_ip}%::*}:
+						if loop-index != "Restriction":
+							set {_alt} to loop-value parsed as offline player
+							send "  &7- &4%{_alt}%" to player
+					send " " to player
+					send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+
+
+			else:
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+				send "      &cThis player has never" to player
+				send "      &cjoined your server!" to player
+				send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+		else:
+			send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
+			send " &4&lUsage:" to player
+			send " &c/alts <player> &7(View a player's alt data)" to player
+			send " &c/alts <player> restrict &7(Restrict a player's ip to a single account)" to player
+			send " &c/alts <player> unrestrict &7(Unrestrict a player's ip)" to player
+			send " &c/alts <player> reset &7(Reset a player's alt data)" to player
+			send " &c/alts <player> history &7(View a player's IP history)" to player
+			send " &c/alts toggle &7(Toggles alt notifications)" to player
+			send " &c/alts reset &7(Deletes all Altmaster data)" to player
+			send "&f&l&l&m-------&f&l< &4&lAlt&7&lMaster &f&l>&f&l&m-------" to player
