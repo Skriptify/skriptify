@@ -1,0 +1,303 @@
+options:
+    debug: false
+    codes: 0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|k|l|m|n|o|r
+  
+function removeColor(msg: text) :: text:
+    set {_m::*} to {_msg} split at ""
+    
+    set {_color-codes} to "{@codes}"
+    set {_colors::*} to {_color-codes} split at "|"
+    
+    set {_new} to ""
+    
+    loop {_m::*}:
+        set {_char} to loop-value
+        set {_prev} to the last character of {_new}
+        
+        if {_prev} is "&":
+        
+            loop {_colors::*}:
+            
+                if loop-value-2 is {_char}:
+                    set {_skip} to true
+                
+        if {_skip} is set:
+            delete {_skip}
+            
+        else:
+            set {_new} to "%{_new}%%{_char}%"
+                
+    return {_new}
+
+function jsonColorize(msg: text, default-color: text = "&r") :: text:
+    set {_m::*} to {_msg} split at ""
+    
+    set {_color-codes} to "{@codes}"
+    set {_colors::*} to {_color-codes} split at "|"
+     
+    set {_color} to colored {_default-color}
+    set {_code} to the first character of {_color}
+    
+    set {_new} to ""
+    set {_skip} to 0
+    
+    loop amount of {_m::*} times:
+    
+        if {_skip} is more than or equal to 1:
+            subtract 1 from {_skip}
+            
+        else:
+            set {_char} to {_m::%loop-number%}
+            set {_next} to {_m::%loop-number + 1%}
+            
+            if {_char} is "&" or {_code}:
+            
+                loop {_colors::*}:
+                
+                    if loop-value-2 is {_next}:
+                        set {_color} to "%{_color}%%{_code}%%{_next}%"
+                        
+                        if {_next} is "r":
+                            set {_color} to {_default-color}
+                            
+                        set {_new} to "%{_new}%%{_color}%"
+                        set {_skip} to 1
+                        
+                if {_skip} is less than or equal to 0:
+                    set {_new} to "%{_new}%%{_char}%"
+                
+            else if {_char} is " ":
+                set {_new} to "%{_new}% %{_color}%"
+            
+            else:
+                set {_new} to "%{_new}%%{_char}%"
+                
+    return {_new}
+
+function jsonSanitize(msg: text) :: text:
+        
+    set {_m::*} to {_msg} split at ""
+    
+    loop {_m::*}:
+    
+        if loop-value is """":
+            set {_m::%loop-index%} to "\""" # """
+            
+        else if loop-value is "\":
+            set {_m::%loop-index%} to "\\"
+            
+    set {_new} to join {_m::*} with ""
+    return {_new}
+
+function jsonFormat(msg: text, color: boolean = true) :: text:
+    set {_m::*} to {_msg} split at "||"
+    
+    set {_current} to 1
+    
+    loop {_m::*}:
+        if {_clusters::%{_current}%} is not set:
+            set {_clusters::%{_current}%} to ""
+        
+        if {_clusters::%{_current}%::text} is not set:
+            set {_clusters::%{_current}%::text} to jsonSanitize(loop-value)
+            
+        else:
+            set {_tag} to the first 4 characters of loop-value
+            set {_value} to subtext of loop-value from characters 5 to the length of loop-value
+            
+            if {_tag} is "ttp:":
+                set {_clusters::%{_current}%::tooltip} to jsonSanitize({_value})
+                
+            else if {_tag} is "cmd:":
+                set {_clusters::%{_current}%::command} to jsonSanitize({_value})
+                
+            else if {_tag} is "sgt:":
+                set {_clusters::%{_current}%::suggest} to jsonSanitize({_value})
+                
+            else if {_tag} is "url:":
+            
+                if {_value} doesn't contain "http://" or "https://":
+                    set {_value} to "http://%{_value}%"
+                    
+                set {_clusters::%{_current}%::url} to jsonSanitize({_value})
+                
+            else if {_tag} is "ins:":
+                set {_clusters::%{_current}%::insertion} to jsonSanitize({_value})
+                
+            else:
+                add 1 to {_current}
+                set {_clusters::%{_current}%::text} to jsonSanitize(loop-value)
+                set {_clusters::%{_current}%} to ""
+     
+    loop {_clusters::*}:
+
+        set {_i} to loop-index
+        
+        set {_text} to {_clusters::%{_i}%::text}
+        
+        if {_color} is true:
+            set {_text} to jsonColorize({_text})
+            
+        if {_json} is not set:
+            set {_json} to "{""text"":""%{_text}%"""
+        else:
+            set {_json} to "%{_json}%,{""text"":""%{_text}%"""
+        
+        if {_clusters::%{_i}%::tooltip} is set:
+        
+            if {_color} is true:
+                set {_tooltip} to jsonColorize({_clusters::%{_i}%::tooltip})
+                
+            else:
+                set {_tooltip} to {_clusters::%{_i}%::tooltip}
+                
+            set {_json} to "%{_json}%,""hoverEvent"":{""action"": ""show_text"",""value"": ""%{_tooltip}%""}"
+        
+        if {_clusters::%{_i}%::insertion} is set:
+            set {_json} to "%{_json}%,""insertion"":""%{_clusters::%{_i}%::insertion}%"",""obfuscated"":false"
+        
+        if {_clusters::%{_i}%::command} is set:
+            set {_clickable} to "%{_json}%,""clickEvent"":{""action"":""run_command"",""value"":""%{_clusters::%{_i}%::command}%""}"
+            
+        if {_clusters::%{_i}%::suggest} is set:
+            set {_clickable} to "%{_json}%,""clickEvent"":{""action"": ""suggest_command"",""value"": ""%{_clusters::%{_i}%::suggest}%""}"
+            
+        if {_clusters::%{_i}%::url} is set:
+            set {_clickable} to "%{_json}%,""clickEvent"":{""action"": ""open_url"",""value"": ""%{_clusters::%{_i}%::url}%""}"
+            
+        if {_clickable} is set:
+            set {_json} to "%{_clickable}%}"
+            delete {_clickable}
+            
+        else:
+            set {_json} to "%{_json}%}"
+    
+    return "{""text"":"""", ""extra"":[%{_json}%]}"
+
+function json(to: text, msg: text, color: boolean = true):
+    set {_msg} to jsonFormat({_msg}, {_color})
+    execute console command "/tellraw %{_to}% %{_msg}%"
+
+# Name: SkNotepad
+# Author: TrueFusion
+# Version: 1.0
+# Dependancies: Skript, Json.sk
+# Use: A Chat Notepad For Servers.
+
+command /notepad [<text>]:
+  description: Toggles on and off the Notepad.
+  permission: notepad.use
+  permission message: &a&lNotepad &7| &fYou do not have the correct permissions!
+  trigger:
+    if arg-1 is "on":
+      set {notepad.toggle.%player's uuid%} to true
+      send "&a&lNotepad &7| &fThe Notepad is now on!"
+      if {notepad.%player's uuid%::*} is not set:
+        set {_uuid} to player's uuid
+        delete {notepad.%{_uuid}%::*}
+        set {_x} to 101
+        loop 94 times:
+          remove 1 from {_x}
+          if {notepad.%{_uuid}%::%{_x}%} is not set:
+            set {notepad.%{_uuid}%::%{_x}%} to ""
+        set {notepad.%{_uuid}%::6} to "&8&l------------------------------"
+        set {notepad.%{_uuid}%::5} to "&8&l|"
+        set {notepad.%{_uuid}%::4} to "&8&l|"
+        set {notepad.%{_uuid}%::3} to "&8&l|"
+        set {notepad.%{_uuid}%::2} to "&8&l|"
+        set {notepad.%{_uuid}%::1} to "&8&l------------------------------"
+    else if arg-1 is "off":
+      if {notepad.toggle.%player's uuid%} is true:
+        loop 100 times:
+          send "" to player
+        set {notepad.toggle.%player's uuid%} to false
+        send "&a&lNotepad &7| &fThe Notepad is now off!"
+      else:
+        set {notepad.toggle.%player's uuid%} to false
+        send "&a&lNotepad &7| &fThe Notepad is now off!"
+    else:
+      send "&a&lNotepad &7| &f/notepad (on/off)" to player
+
+on chat:
+  if {notepad.toggle.%sender's uuid%} is true:
+    cancel event
+    notepadCycle(sender)
+    set {notepad.%sender's uuid%::7} to message
+    set {_c} to 101
+    loop 100 times:
+      send "" to sender
+    loop 100 times:
+      remove 1 from {_c}
+      if {notepad.%sender's uuid%::%{_c}%} is not "":
+        if {_c} is not less than 7:
+          send "&7&l%({_c} - 6)% &r&f%{notepad.%sender's uuid%::%{_c}%}%" to sender
+        else:
+          if {_c} is 6:
+            json("%sender%", "&8&l------------------------------")
+          if {_c} is 5:
+            json("%sender%", "&8&l|&r||&f ||&c&lExit||ttp:&7Save and exit notepad||cmd:/notepad off")
+          if {_c} is 4:
+            json("%sender%", "&8&l|&r||&f ||&4&lReset||ttp:&7Reset your notepad||cmd:/notepad:reset")
+          if {_c} is 3:
+            json("%sender%", "&8&l|&r||&f ||&a&lVersion||ttp:&a&lNotepad &7| &fV1.0")
+          if {_c} is 2:
+            json("%sender%", "&8&l|&r||&f ||&b&l%sender%||ttp:&7Its you!")
+          if {_c} is 1:
+            json("%sender%", "&8&l------------------------------")
+
+every 5 ticks:
+  loop all players:
+    if {notepad.toggle.%loop-player's uuid%} is true:
+      set {_c} to 101
+      loop 100 times:
+        send "" to loop-player
+      loop 100 times:
+        remove 1 from {_c}
+        if {notepad.%loop-player's uuid%::%{_c}%} is not "":
+          if {_c} is not less than 7:
+            send "&7&l%({_c} - 6)% &r&f%{notepad.%loop-player's uuid%::%{_c}%}%" to loop-player
+          else:
+            if {_c} is 6:
+              json("%loop-player%", "&8&l------------------------------")
+            if {_c} is 5:
+              json("%loop-player%", "&8&l|&r||&f ||&c&lExit||ttp:&7Save and exit notepad||cmd:/notepad off")
+            if {_c} is 4:
+              json("%loop-player%", "&8&l|&r||&f ||&4&lReset||ttp:&7Reset your notepad||cmd:/notepad:reset")
+            if {_c} is 3:
+              json("%loop-player%", "&8&l|&r||&f ||&a&lVersion||ttp:&a&lNotepad &7| &fV1.0")
+            if {_c} is 2:
+              json("%loop-player%", "&8&l|&r||&f ||&b&l%loop-player%||ttp:&7Its you!")
+            if {_c} is 1:
+              json("%loop-player%", "&8&l------------------------------")
+        else if {notepad.%loop-player's uuid%::%{_c}%} is not set:
+          set {notepad.%loop-player's uuid%::%{_c}%} to ""
+
+command /notepad:reset:
+  description: Resets the notepad!
+  permission: notepad.use
+  permission message: &a&lNotepad &7| &fYou do not have the correct permissions!
+  trigger:
+    set {_uuid} to player's uuid
+    delete {notepad.%{_uuid}%::*}
+    set {_x} to 101
+    loop 94 times:
+      remove 1 from {_x}
+      if {notepad.%{_uuid}%::%{_x}%} is not set:
+        set {notepad.%{_uuid}%::%{_x}%} to ""
+    set {notepad.%{_uuid}%::6} to "&8&l------------------------------"
+    set {notepad.%{_uuid}%::5} to "&8&l|"
+    set {notepad.%{_uuid}%::4} to "&8&l|"
+    set {notepad.%{_uuid}%::3} to "&8&l|"
+    set {notepad.%{_uuid}%::2} to "&8&l|"
+    set {notepad.%{_uuid}%::1} to "&8&l------------------------------"
+
+function notepadCycle(p: player):
+  set {_uuid} to {_p}'s uuid
+  set {_c} to 101
+  set {_x} to 100
+  loop 93 times:
+    remove 1 from {_c}
+    remove 1 from {_x}
+    if {notepad.%{_uuid}%::%{_x}%} is not set:
+      set {notepad.%{_uuid}%::%{_x}%} to ""
+    set {notepad.%{_uuid}%::%{_c}%} to {notepad.%{_uuid}%::%{_x}%}
