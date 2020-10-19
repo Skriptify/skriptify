@@ -1,0 +1,52 @@
+#Made by xlr100#6932, message me for any bug
+options:
+    #Change the following according to your preference
+    item: nether star #The backpack item
+    name: &eBackpack #The backpack name
+    command: backpack #The command
+    permission: * #The permission
+    #Do not touch!
+    storage: backpacks
+
+function Backpack_Create(rows: integer) :: item:
+    add 1 to {{@storage}::backpacks}
+    set {_id} to {{@storage}::backpacks}
+    set {_item} to {@item} named "{@name} &7(##%{_id}%)"
+    set {{@storage}::id::%{_id}%::rows} to {_rows}
+    loop integers from 0 to {_rows} * 9:
+        set {{@storage}::id::%{_id}%::items::%loop-value%} to air
+    return {_item}
+
+command /{@command} [<text>] <integer> <player>:
+    permission: {@permission}
+    trigger:
+        if arg-1 is "give":
+            if arg-2 > 0:
+                if arg-2 < 7:
+                    give Backpack_Create(arg-2) to arg-3
+                else:
+                    send "&cMin rows 1, max rows 6"
+            else:
+                send "&cMin rows 1, max rows 6"
+        else:
+            send "&cCorrect Usage: &7/{@command} give <rows> <player>"
+
+on rightclick with {@item}:
+    name of player's tool contains "{@name}"
+    set {_name} to name of player's tool
+    replace all "{@name} &7(##" and ")" in {_name} with ""
+    set {_id} to uncolored {_name}
+    set metadata value "backpack" of player to {_id}
+    set {_menu} to chest inventory with {{@storage}::id::%{_id}%::rows} rows named "Backpack ##%{_id}%"
+    set {_num} to -1
+    loop {{@storage}::id::%{_id}%::items::*}:
+        add 1 to {_num}
+        set slot {_num} of {_menu} to loop-value
+    open {_menu} to player
+
+on inventory close:
+    metadata value "backpack" of player is set
+    set {_id} to metadata value "backpack" of player
+    loop integers from 0 to ({{@storage}::id::%{_id}%::rows} * 9):
+        set {{@storage}::id::%{_id}%::items::%loop-value%} to slot loop-value of player's current inventory
+    delete metadata "backpack" of player
