@@ -1,27 +1,68 @@
-#		Simple Launch Pad Skript
-
-options:
-	launch_pad_block: slime block
-
-# true or false
-	require_elytra: true
-	require_permission: true
-
-	permission_node: easylaunch.use
-
-	forward_power: 1
-	vertical_power: 2
+Options:
+    padblock: gold block
+    defaultforce: 2
 
 
-on walk on {@launch_pad_block}:
-	if {@require_elytra} = true:
-		player's chestplate is not a elytra
-		send action bar "&8&l| &4You need to be wearing an elytra" to player
-		stop
-	if {@require_permission} = true:
-		player doesn't have permission "{@permission_node}"
-		send action bar "&8&l| &4You need the required permission node" to player
-		stop
-	push player upwards at speed {@vertical_power}
-	push player forwards at speed {@forward_power}
-	play sound "entity.slime.jump" with volume 10 to player
+command /boostpad [<text = create>] [<number = {@defaultforce}>]:
+    permission: boostpad.admin
+    trigger:
+        set {_d} to block at player's location
+        remove 1 from the y coordinate of {_d}
+        if arg-1 is "create":
+            if {padblocks::*} doesn't contain {_d}:
+                set block at {_d} to {@padblock}
+                add {_d} to {padblocks::*}
+                set {padforce::%{_d}%} to arg-2
+            else:
+                send "&cThere is already a valid boostpad at this location."
+        else if arg-1 is "delete":
+            if {padblocks::*} contains {_d}:
+                set block at {_d} to air
+                remove {_d} from {padblocks::*}
+                delete {padforce::%{_d}%}
+            else:
+                send "&cThere is no valid boostpad at this location."
+        else if arg-1 is "setforce" or "force" or "setpower" or "power":
+            if {padblocks::*} contains {_d}:
+                set {padforce::%{_d}%} to arg-2
+            else:
+                send "&cThere is no valid boostpad at this location."
+        else if arg-1 is "edit":
+            if {padblocks::*} contains {_d}:
+                send formatted "&aEditing the boostpad at %{_d}%:","<tooltip: &aClick here to change!><suggest command:/boostpad power >&8Current power: &b(&2%{padforce::%{_d}%}%<reset>&b)","<command:/boostpad delete>&cClick here to delete the boostpad!"
+            else:
+                send "&cThere is no valid boostpad at this location."
+        else if arg-1 is "EditWand" or "edit-wand" or "editwand" or "getwand" or "get" or "wand":
+            give player a stick named "&aBoostpad edit wand!"
+
+command /boostpad2 [<text = delete>] [<number = {@defaultforce}>]:
+    permission: boostpad.wand
+    trigger:
+        set {_d} to location of player's targeted block
+        if arg-1 is "delete":
+            if {padblocks::*} contains {_d}:
+                set block at {_d} to air
+                remove {_d} from {padblocks::*}
+                delete {padforce::%{_d}%}
+            else:
+                send "&cThere is no valid boostpad where you are looking."
+        else if arg-1 is "setforce" or "force" or "setpower" or "power":
+            if {padblocks::*} contains {_d}:
+                set {padforce::%{_d}%} to arg-2
+            else:
+                send "&cThere is no valid boostpad at this where you are looking."
+
+
+on right click with a stick:
+    name of player's tool contains "Boostpad edit wand!":
+        player has permission "boostpad.wand" or "boostpad.admin":
+            set {_d} to location of event-block
+            {padblocks::*} contains {_d}
+            send formatted "&aEditing the boostpad at %{_d}%:","<tooltip: &aClick here to change!><suggest command:/boostpad2 power >&8Current power: &b(&2%{padforce::%{_d}%}%<reset>&b)","<command:/boostpad2 delete>&cClick here to delete the boostpad!"
+
+
+
+on walk on {@padblock}:
+    if {padblocks::*} contains location of event-block:
+        set {_d} to (direction from player's location to location 150 meters in front of player)
+        push player {_d} with force ({padforce::%location of event-block%}*2)
