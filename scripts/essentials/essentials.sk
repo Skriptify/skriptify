@@ -1,124 +1,231 @@
 #
-# The Essentials of Essentials - made by Lupusor, Austin/Mesyl2 and TheMandalorian
+# The Essentials of Essentials - made by Lupusor, Austin/Mesyl2 and TheMandalorian HEAVILY EDITED by BeanyDoesStuff_/ztimhirsch
+# It was garbage and now is better - ztimhirsch
 #
 
 
 
 options:
-    colour1: §7 #use &7, &8, &3 and clean colors
-    colour2: §b
+    notify: true #Notify people with the permission to get the notification (notify.command)
+    colour1: §7
+    colour2: §8
     colour3: &3 
     server: &3&lTEST
-    announcetime: 8 #for the announcement! delete if you dont use timed announcements!
+    announcetime: 8 # For timed announcements! Delete if you dont use timed announcements!
 
-command /heal:
+command /heal [<player>]:
     permission: skript.heal
     permission message: &cInsufficient permissions!
     trigger:
-        heal the player
-        feed the player
-        send "{@colour1}You have been healed."
+        arg-1 is set:
+            heal the player-argument ? player
+            feed the player-argument ? player
+            send "{@colour1}You have been healed." to the player-argument ? player
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/heal %arg-1 ? player%" to all players where [input has permission "notify.heal"] if {@notify} is true
 
-command /feed:
+command /feed [<player>]:
     permission: skript.feed
     permission message: &cInsufficient permissions!
     trigger:
-        feed the player
-        send "{@colour1}Your appetite was sated."
+        feed the player-argument ? player
+        send "{@colour1}Your appetite was sated." to the player-argument ? player
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/feed %arg-1 ? player%" to all players where [input has permission "notify.feed"] if {@notify} is true
 
-command /killall:
+command /killall <text = all>:
     permission: skript.killall
     permission message: &cInsufficient permissions!
     trigger:
-        kill all mobs
-        send "{@colour1}Killed all mobs."
+        if arg-1 is "mobs" or "Mobs":
+            kill all mobs
+            send "{@colour1}Killed all mobs."
+        else if arg-1 is "players" or "Players":
+            kill all players
+            send "{@colour1}Killed all players."
+        else if arg-1 is "all" or "All":
+            kill all entities
+            send "{@colour1}Killed all players and mobs."
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/killall %arg-1%" to all players where [input has permission "notify.killall"] if {@notify} is true
 
-command /sethome <text>:
-	permission: skript.sethome
-	description: Set your home
-	usage: /sethome [Name]
-	trigger:
-		set {home.%player%.%argument%} to location of player
-		message "{@colour1}Home set!"
-		
-command /home <text>:
-	permission: skript.home
-	description: Teleport yourself to your home
-	usage: /home [Name]
-	trigger:
-		if {home.%player%} is not set:
-			message "&cError: You have no homes set!"
-			stop trigger
-		teleport player to {home.%player%.%argument%}
-		
-command /tp <player>:
-	description: Teleports you to a player.
-	usage: /tp <target player>.
-	permission: skript.tp
-	trigger:
-		if player has permission "skript.tp":
-			teleport player to argument
-			message "{@colour1}Teleported to {@colour2}%argument%"
-			stop
-			
+# Homes
+
+on join:
+    set {maximum::homes::%player's uuid%} to 2
+
+command /sethome <text = home>:
+    permission: skript.sethome
+    description: Set your home
+    usage: /sethome [Name]
+    trigger:
+        {maximum::homes::%player's uuid%} > (size of {homes::%player's uuid%::*}):
+            set {home::%player's uuid%::%argument%} to block at location of player
+            message "{@colour1}Home set!"
+        else:
+            send "{@colour1}You have the maximum amount of homes set"
+        
+command /home <text> [<player>]:
+    permission: skript.home
+    description: Teleport yourself to your home
+    usage: /home [Name]
+    trigger:
+        if arg-2 is player:
+            if {home::%player's uuid%::%arg-1%} is not set:
+                message "&cError: You have no homes set with this name!"
+            else:
+                teleport player to {home::%player's uuid%::%argument-1%}
+        else if arg-2 is not set:
+            if {home::%player's uuid%::%arg-1%} is not set:
+                message "&cError: You have no homes set with this name!"
+            else:
+                teleport player to {home::%player's uuid%::%argument-1%}
+        else:
+            player has permission "skript.homes.others":
+                if {home::%arg-2's uuid%::%arg-1%} is set:
+                    teleport player to {home::%arg-2's uuid%::%arg-1%}
+                    send "{@colour3}%player%{@colour1} has done a command! {@colour2}/home %arg-1%{@colour2} %arg-2%" to all players where [input has permission "notify.home"] if {@notify} is true
+                else:
+                    message "&cError: %arg-2% &chas no homes set with this name!"
+            else:
+                send "&cError: You do not have permission to teleport to other people's home."
+
+command /homes [<player>]:
+    permission: skript.homes
+    description: View your homes
+    usage: /homes [player]
+    trigger:
+        if arg-1 is player:
+            send "{@colour1}Homes of {@colour3}%player%"
+            loop {home::%player's uuid%::*}:
+                send "{@colour2}%loop-index%"
+        else if arg-1 is not set:
+            send "{@colour1}Homes of {@colour3}%player%"
+            loop {home::%player's uuid%::*}:
+                send "{@colour2}%loop-index%"
+        else if player has permission "skript.homes.others":
+            send "{@colour1}Homes of {@colour3}%arg-1%"
+            loop {home::%arg-1's uuid%::*}:
+                send "{@colour2}%loop-index%"
+
+command /tp <text> [to] [<text>] [<text>]:
+    description: Teleports you to a player.
+    usage: /tp <target player>.
+    permission: skript.tp
+    trigger:
+        if arg-2 is not set:
+            if arg-1 parsed as a player is set:
+                teleport player to (arg-1 parsed as a player)'s location
+                message "{@colour1}Teleported to {@colour2}%arg-1%"
+            else if arg-1 parsed as a offline player is set:
+                send "&cUse /otp <player> to teleport to an offline player!"
+        else:
+            if arg-2 parsed as a player is set:
+                teleport (arg-1 parsed as a player) to (arg-2 parsed as a player)'s location
+                send "{@colour1}Teleported {@colour2}%arg-1% {@colour1}to {@colour3}%arg-2%" to player
+                send "{@colour1}You have been teleported to {@colour2}%arg-2% {@colour1}by {@colour3}%player%" to arg-1 parsed as a player
+            else if arg-3 is set:
+                execute console command "/minecraft:teleport %player% %arg-1% %arg-2% %arg-3%"
+                send "{@colour1}You have teleported to {@colour2}%arg-1%, {@colour2}%arg-2%, {@colour2}%arg-3%"
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/teleport %arg-1%{@colour2} %arg-2%{@colour2} %arg-3%" to all players where [input has permission "notify.teleport"] if {@notify} is true
+
+command /teleport <text> [to] [<text>] [<text>]:
+    description: Teleports you to a player.
+    usage: /tp <target player>.
+    permission: skript.tp
+    trigger:
+        arg-2 is not set:
+            arg-1 parsed as a player is set:
+                teleport player to (arg-1 parsed as a player)'s location
+                message "{@colour1}Teleported to {@colour2}%arg-1%"
+            else if arg-1 parsed as a offline player is set:
+                send "&cUse /otp <player> to teleport to an offline player!"
+        else:
+            arg-2 parsed as a player is set:
+                teleport (arg-1 parsed as a player) to (arg-2 parsed as a player)'s location
+                send "{@colour1}Teleported {@colour2}%arg-1% {@colour1}to {@colour3}%arg-2%" to player
+                send "{@colour1}You have been teleported to {@colour2}%arg-2% {@colour1}by {@colour3}%player%" to arg-1 parsed as a player
+            else if arg-3 is set:
+                execute console command "/minecraft:teleport %player% %arg-1% %arg-2% %arg-3%"
+                send "{@colour1}You have teleported to {@colour2}%arg-1%, {@colour2}%arg-2%, {@colour2}%arg-3%"
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/teleport %arg-1%{@colour2} %arg-2%{@colour2} %arg-3%" to all players where [input has permission "notify.teleport"] if {@notify} is true
+            
 command /tphere <player>:
-	description: Teleporta a player to you
-	usage: /tp <target player>
-	permission: skript.tphere
-	trigger:
-		if player has permission "skript.tphere":
-			message "{@colour1}Teleported {@colour2}%argument%"
-			teleport argument to player
-			stop
-			
+    description: Teleport a player to you
+    usage: /tphere <target player>
+    permission: skript.tphere
+    trigger:
+        message "{@colour1}Teleported {@colour2}%argument% {@colour1}to you"
+        teleport argument to player's location
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/teleporthere %arg-1%" to all players where [input has permission "notify.teleport"] if {@notify} is true
+
+command /teleporthere <player>:
+    description: Teleport a player to you
+    usage: /tphere <target player>
+    permission: skript.tphere
+    trigger:
+        message "{@colour1}Teleported {@colour2}%argument% {@colour1}to you"
+        teleport argument to player's location
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/teleporthere %arg-1%" to all players where [input has permission "notify.teleport"] if {@notify} is true
+
 command /tpa <player>:
-	permission: skript.tpa
-	description: Teleport to an player
-	trigger:	
-		set {skript.tpa.%argument 1%} to player
-		send "{@colour2}%{skript.tpa.%argument 1%}% {@colour1}wants to teleport you to him." to argument 1
-		message "{@colour1}Teleport request sent."
-		
+    permission: skript.tpa
+    description: Teleport to an player
+    trigger:    
+        set {skript::tpa::%argument 1%} to "%player%|%now%"
+        send "{@colour2}%player% {@colour1}wants teleport to you. &7Use /tpaccept to accept" to argument 1
+        message "{@colour1}Teleport request sent."
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/tpa %arg-1%" to all players where [input has permission "notify.teleportrequest"] if {@notify} is true
+
 command /tpahere <player>:
-	permission: skript.tpahere
-	description: Teleport an player to you
-	trigger:
-		set {skript.tpahere.%argument 1%} to player
-		send "{@colour2}{skript.tpa.%argument 1%} {@colour1}wants to teleport to you." to argument 1
-		message "{@colour2}Teleport request sent."
-			
+    permission: skript.tpahere
+    description: Teleport an player to you
+    trigger:
+        set {skript::tpahere::%argument 1%} to "%player%|%now%"
+        send "{@colour2}%player% {@colour1}wants you to teleport to them." to argument 1
+        message "{@colour2}Teleport request sent."
+        send "{@colour3}%player%{@colour1} has done a command! {@colour2}/tpahere %arg-1%" to all players where [input has permission "notify.teleportrequest"] if {@notify} is true
+
 command /tpaccept:
-	permission: skript.tpaccept
-	trigger:
-		if {skript.tpa.%player%} is not "0":
-			teleport {skript.tpa.%player%} to location of player
-			send "{@colour1}%player% was teleported to you" to {skript.tpahere.%player%} 
-			send "{@colour1}You were teleported to %{skript.tpahere.%player%} %" to player
-		if {skript.tpahere.%player%} is not "0":
-			teleport player to location of {skript.tpahere.%player%}
-			send "{@colour1}You we're teleported to %player%" to {skript.essentials.tpahere.%player%} 
-			send "{@colour1}%{skript.tpahere.%player%}% {@colour2}was teleported to you" to player
-		else:
-			message "&cThere aren't any teleport requests"
+    permission: skript.tpaccept
+    trigger:
+        if {skript::tpa::%player%} is set:
+            set {_d::*} to split {skript::tpa::%player%} at "|"
+            if {_d::2} was less than 30 seconds ago:
+                teleport {skript::tpa::%player%} to location of player
+                send "{@colour1}You were teleported to %player%!" to {skript::tpa::%player%} 
+                send "{@colour1}%{skript::tpa::%player%}%{@colour1} was teleported to you!" to player
+            else:
+                send "{@colour1}Your last teleport request was sent more than 30 seconds ago."
+        else if {skript::tpahere::%player%} is set:
+            set {_d::*} to split {skript::tpahere::%player%} at "|"
+            if {_d::2} was less than 30 seconds ago:
+                teleport player to location of {skript::tpahere::%player%}
+                send "{@colour1}You were teleported to %player%" to player
+                send "{@colour1}%{skript.tpahere.%player%}% {@colour2}was teleported to you" to {skript::tpahere::%player%} 
+            else:
+                send "{@colour1}Your last teleport request was sent more than 30 seconds ago."
+        else:
+            message "&cThere aren't any teleport requests"
 
-
-
-command /broadcast [<text>]:
+command /broadcast [<string>]:
     permission: bc.use
     permission message: {@server} &8| &7Insufficient Permissions!
     trigger:
         if arg-1 is not set:
             send "{@server} &8| &7Please write something!"
         if arg-1 is set:
-            broadcast "{@server} &8| &f%coloured arg-1%"
+            broadcast "{@server} &8| {@colour2}%coloured arg-1%"
 
-command /bc [<text>]:
+command /bc [<string>]:
     permission: bc.use
     trigger:
         if arg-1 is not set:
             send "{@server} &8| &7Please write something!"
         if arg-1 is set:
             broadcast "{@server} &8| {@colour2}%coloured arg-1%"
+
+command /gamemode <text>:
+    permission: gamemode.sk
+    trigger:
+        make player execute "/gm%arg-1%"
             
 command /gmc:
     permission: gmc.sk
@@ -167,8 +274,15 @@ command /wclear:
     trigger:
         set weather to clear
         send "{@colour1}Weather set to {@colour2}sun."
+        
+command /sun:
+    permission: sk.sun
+    trigger:
+        set weather to clear
+        send "{@colour1}Weather set to {@colour2}sun."
 
 command /suicide:
+    permission: sk.suicide
     trigger:
         kill player
 
@@ -180,13 +294,13 @@ command /deldrops:
 
 every {@announcetime} minutes:
      broadcast ""
-     broadcast "&c&lEDIT THIS IN SKRIPT CONFIG!"
+     broadcast "&c&lEDIT THIS IN THE SKRIPT CONFIG!"
      broadcast ""
 
 command /motd:
      trigger:
           message " "
-          message "&a&lEDIT MODT SKRIPT CONFIG!"
+          message "&a&lEDIT MOTD IN THE SKRIPT CONFIG!"
           message " "
 
 command /skull:
@@ -197,6 +311,9 @@ command /clearchat:
     permission: cc.use
     aliases: cc
     trigger:
+        loop all players:
+            loop 10 times:
+                broadcast "%loop-player%- Your anti-clearchat will not work on this."
         loop 300 times:
             broadcast ""
         broadcast "{@server} &8| {@colour2}%player% {@colour1}has cleared the chat!"
@@ -216,279 +333,269 @@ command /allsudo <text>:
                 make loop-player say arg-1
 
 #
-#		Essentials Kits (made by Austin collaborating with Lupusor)
+#        Essentials Kits (made by Austin collaborating with Lupusor)
 #
 
-#			Known Bug
-#	when using the /createkit there is a bug ever so often where it sends "An internal error occurred"
-#	it's an issue with timespam mainly just add/remove the (s) in the cooldown part (this issue can also be seen for [1 minute and 5 seconds]
-#		EX:	/createkit example 1 minute
-#		EX:	/createkit example 1 minutes
+#            Known Bug
+#    when using the /createkit there is a bug ever so often where it sends "An internal error occurred"
+#    it's an issue with timespam mainly just add/remove the (s) in the cooldown part (this issue can also be seen for [1 minute and 5 seconds]
+#        EX:    /createkit example 1 minute
+#        EX:    /createkit example 1 minutes
 #
-#	PERMISSIONS:
-#		easykits.createkit
-#		easykits.deletekit
-#		easykits.kit.(kit)
-#		easykits.createkit
-#		easykits.createsigns
+#    PERMISSIONS:
+#        easykits.createkit
+#        easykits.deletekit
+#        easykits.kit.(kit)
+#        easykits.createkit
+#        easykits.createsigns
 #
-#	COMMANDS:
-#		/previewkit (kit) | preview a kit on the server | no permission needed
-#		/kit (kit) | select a kit you own | no permission needed
-#		/kits | list all kits you own with an unlimited page gui | no permission needed
-#		/deletekit (kit) | delete a kit you don't want from the server | easykits.deletekit
-#		/createkit (kit) (timespan) | create a kit you for the server | easykits.createkit
-#			EX: /createkit example 1 second
-#			EX: /createkit example 0 seconds
-#			EX: /createkit example 5 minutes and 5 seconds
+#    COMMANDS:
+#        /previewkit (kit) | preview a kit on the server | no permission needed
+#        /kit (kit) | select a kit you own | no permission needed
+#        /kits | list all kits you own with an unlimited page gui | no permission needed
+#        /deletekit (kit) | delete a kit you don't want from the server | easykits.deletekit
+#        /createkit (kit) (timespan) | create a kit you for the server | easykits.createkit
+#            EX: /createkit example 1 second
+#            EX: /createkit example 0 seconds
+#            EX: /createkit example 5 minutes and 5 seconds
 #
-#	SIGNS:
-#		on any sign put [PREVIEW KIT] or [SELECT KIT] on line 1
-#		and on line 2 put the kit you'd like to preview/select
-#		these usages are great for people who own a kit pvp server
+#    SIGNS:
+#        on any sign put [PREVIEW KIT] or [SELECT KIT] on line 1
+#        and on line 2 put the kit you'd like to preview/select
+#        these usages are great for people who own a kit pvp server
 
 
 
 #
-#			Functions (Do not edit without knowing how)
+#            Functions (Do not edit without knowing how)
 #
 
 options:
-	drop_when_full: true # true or false | yes or no
+    drop_when_full: true # true or false | yes or no
 
 
 function previewKit(p: player, kit: text):
-	{EasyKits::*} contains {_kit}
-	set metadata value "gui" of {_p} to "kitpreview"
-	set {_inv} to chest inventory with 5 rows named "Previewing Kit | %{_kit}%"
-	loop {EasyKits::%{_kit}%::items::*}:
-		set {_id} to (((loop-index) parsed as integer)-1)
-		{_id} < 36
-		set {_slot} to {_id}+27 if {_id} < 9 else {_id}-9
-		set slot {_slot} of {_inv} to loop-value
-	set slot (integers from 36 to 44) of {_inv} to black stained glass pane
-	set slot 40 of {_inv} to paper named "&3Inventory View Information" with lore "&7Line 1", "&7Line 2", "&7Line 3" and "&bHot-Bar"
-	open {_inv} to {_p}
+    {EasyKits::*} contains {_kit}
+    set metadata value "gui" of {_p} to "kitpreview"
+    set {_inv} to chest inventory with 5 rows named "Previewing Kit | %{_kit}%"
+    loop {EasyKits::%{_kit}%::items::*}:
+        set {_id} to (((loop-index) parsed as integer)-1)
+        {_id} < 36
+        set {_slot} to {_id}+27 if {_id} < 9 else {_id}-9
+        set slot {_slot} of {_inv} to loop-value
+    set slot (integers from 36 to 44) of {_inv} to black stained glass pane
+    set slot 40 of {_inv} to paper named "&3Inventory View Information" with lore "&7Line 1", "&7Line 2", "&7Line 3" and "&bHot-Bar"
+    open {_inv} to {_p}
 
 function listKits(p: player, page: number):
-	set metadata value "gui" of {_p} to "kitlist"
-	set metadata value "guidata" of {_p} to {_page}
-	set {_kits::*} to {EasyKits::*} where [{_p} has permission "easykits.kit.%input%"]
-	set {_inv} to chest inventory with 6 rows named "Kits | Total: %size of {_kits::*}% | Page: %({_page})+1%"
-	set {_startPoint} to {_page}*36
-	set {_slot} to 9
-	loop {_kits::*}:
-		((loop-index) parsed as integer) > {_startPoint}
-		set slot {_slot} of {_inv} to paper named "&e%loop-value%" with lore "&7Cooldown: &f%{EasyKits::%loop-value%::cooldown}%" and "&7Permission: &fEasyKits.kit.%loop-value%", "" and "&7&l| &fRight Click to Preview"
-		add 1 to {_slot}
-		{_slot} = 45
-		exit loop
-	if (size of {_kits::*}) > (({_startPoint})+36):
-		set slot 53 of {_inv} to arrow named "&eNext Page"
-	if {_page} > 0:
-		set slot 45 of {_inv} to arrow named "&ePrevious Page"
-	open {_inv} to {_p}
+    set metadata value "gui" of {_p} to "kitlist"
+    set metadata value "guidata" of {_p} to {_page}
+    set {_kits::*} to {EasyKits::*} where [{_p} has permission "easykits.kit.%input%"]
+    set {_inv} to chest inventory with 6 rows named "Kits | Total: %size of {_kits::*}% | Page: %({_page})+1%"
+    set {_startPoint} to {_page}*36
+    set {_slot} to 9
+    loop {_kits::*}:
+        ((loop-index) parsed as integer) > {_startPoint}
+        set slot {_slot} of {_inv} to paper named "&e%loop-value%" with lore "&7Cooldown: &f%{EasyKits::%loop-value%::cooldown}%" and "&7Permission: &fEasyKits.kit.%loop-value%", "" and "&7&l| &fRight Click to Preview"
+        add 1 to {_slot}
+        {_slot} = 45
+        exit loop
+    if (size of {_kits::*}) > (({_startPoint})+36):
+        set slot 53 of {_inv} to arrow named "&eNext Page"
+    if {_page} > 0:
+        set slot 45 of {_inv} to arrow named "&ePrevious Page"
+    open {_inv} to {_p}
 
 function selectKit(p: player, kit: text):
-	{EasyKits::*} contains {_kit}
-	{_p} has permission "easykits.kit.%{_kit}%"
-	set {_uuid} to uuid of {_p}
-	set {_now} to now
-	set {_lastUsed} to {KitData::%{_uuid}%::%{_kit}%} otherwise now
-	set {_cooldown} to {EasyKits::%{_kit}%::cooldown}
-	send "&cYou still need to wait &4%difference between {_lastUsed} and {_now}%" to {_p} where [{_now} < {_lastUsed}]
-	{_now} >= {_lastUsed}
-	set {KitData::%{_uuid}%} to {_uuid}
-	set {KitData::%{_uuid}%::%{_kit}%} to {_cooldown} from now
-	loop {EasyKits::%{_kit}%::items::*}:
-		loop-value is not air
-		add loop-value to {_p}'s inventory where [{_p} can hold loop-value]
-		{@drop_when_full} is true or yes
-		drop loop-value above {_p}'s location where [{_p} can't hold loop-value]
-	send "&aYou've used the kit &2%{_kit}%" to {_p}
+    {EasyKits::*} contains {_kit}
+    {_p} has permission "easykits.kit.%{_kit}%"
+    set {_uuid} to uuid of {_p}
+    set {_now} to now
+    set {_lastUsed} to {KitData::%{_uuid}%::%{_kit}%} otherwise now
+    set {_cooldown} to {EasyKits::%{_kit}%::cooldown}
+    send "&cYou still need to wait &4%difference between {_lastUsed} and {_now}%" to {_p} where [{_now} < {_lastUsed}]
+    {_now} >= {_lastUsed}
+    set {KitData::%{_uuid}%} to {_uuid}
+    set {KitData::%{_uuid}%::%{_kit}%} to {_cooldown} from now
+    loop {EasyKits::%{_kit}%::items::*}:
+        loop-value is not air
+        add loop-value to {_p}'s inventory where [{_p} can hold loop-value]
+        {@drop_when_full} is true or yes
+        drop loop-value above {_p}'s location where [{_p} can't hold loop-value]
+    send "&aYou've used the kit &2%{_kit}%" to {_p}
 
 
 #
-#		Message Options
-#
-
-options:
-	usage: &c/createkit (name) (cooldown)
-	noItems: &cYou don't have any items if your inventory
-	inUse: &cThis kit name already exist
-	lengthLimit: &cThere is a minimum of 3 characters and a maximum of 8 characters! 
-
-
-#
-#		Command Options
+#        Message Options
 #
 
 options:
-	permission: easykits.createkit
-	permission_message: {@server} &8&l| &cYou don't have the required permission node
-	cooldown: 0 seconds # when set to 0 this will allow it to be spammed
-	cooldown_message: {@server} &8&l| &cThis command is currently still on a %remaining time% cooldown
-	cooldown_bypass: skript.admin
+    usage: &c/createkit (name) (cooldown)
+    noItems: &cYou don't have any items if your inventory
+    inUse: &cThis kit name already exist
+    lengthLimit: &cThere is a minimum of 3 characters and a maximum of 8 characters! 
+
+
+#
+#        Command Options
+#
+
+options:
+    permission: easykits.createkit
+    permission_message: {@server} &8&l| &cYou don't have the required permission node
+    cooldown: 0 seconds # when set to 0 this will allow it to be spammed
+    cooldown_message: {@server} &8&l| &cThis command is currently still on a %remaining time% cooldown
+    cooldown_bypass: skript.admin
 
 command /createkit [<text>] [<timespan>]:
-	permission: {@permission}
-	permission message: {@permission_message}
-	cooldown: {@cooldown}
-	cooldown message: {@cooldown_message}
-	cooldown bypass: {@cooldown_bypass}
-	executable by: players
-	trigger:
-		if arg 1 or arg 2 is not set:
-			send "{@usage}"
-			cancel cooldown
-		else if (amount of items in player's inventory) = 0:
-			send "{@noItems}"
-			cancel cooldown
-		else if {EasyKits::*} contains arg-1:
-			send "{@inUse}"
-			cancel cooldown
-		else if length of arg-1 > 10:
-			send "{@lengthLimit}"
-			cancel cooldown
-		else if length of arg-1 < 3:
-			send "{@lengthLimit}"
-			cancel cooldown
-		else:
-			set {EasyKits::%arg-1%} to arg-1
-			set {EasyKits::%arg-1%::cooldown} to arg-2
-			loop 36 times:
-				set {EasyKits::%arg-1%::items::%loop-value%} to slot ((loop-value)-1) of player's inventory
-			send "&cYou've created the new kit &4%arg-1% &cwith a cooldown of &4%arg-2%"
+    permission: {@permission}
+    permission message: {@permission_message}
+    cooldown: {@cooldown}
+    cooldown message: {@cooldown_message}
+    cooldown bypass: {@cooldown_bypass}
+    executable by: players
+    trigger:
+        if arg 1 or arg 2 is not set:
+            send "{@usage}"
+            cancel cooldown
+        else if (amount of items in player's inventory) = 0:
+            send "{@noItems}"
+            cancel cooldown
+        else if {EasyKits::*} contains arg-1:
+            send "{@inUse}"
+            cancel cooldown
+        else if length of arg-1 > 10:
+            send "{@lengthLimit}"
+            cancel cooldown
+        else if length of arg-1 < 3:
+            send "{@lengthLimit}"
+            cancel cooldown
+        else:
+            set {EasyKits::%arg-1%} to arg-1
+            set {EasyKits::%arg-1%::cooldown} to arg-2
+            loop 36 times:
+                set {EasyKits::%arg-1%::items::%loop-value%} to slot ((loop-value)-1) of player's inventory
+            send "&cYou've created the new kit &4%arg-1% &cwith a cooldown of &4%arg-2%"
 
 command /previewkit [<text>]:
-	executable by: players
-	trigger:
-		send "&cYou need to define a kit" to player where [arg-1 is not set]
-		arg-1 is set
-		send "&4%arg-1% &cdoesn't seem to be a kit" to player where [{EasyKits::*} doesn't contain arg-1]
-		{EasyKits::*} contains arg-1
-		previewKit(player, arg-1)
+    executable by: players
+    trigger:
+        send "&cYou need to define a kit" to player where [arg-1 is not set]
+        arg-1 is set
+        send "&4%arg-1% &cdoesn't seem to be a kit" to player where [{EasyKits::*} doesn't contain arg-1]
+        {EasyKits::*} contains arg-1
+        previewKit(player, arg-1)
 
 command /kit [<text>]:
-	executable by: players
-	trigger:
-		send "&cYou need to define a kit" to player where [arg-1 is not set]
-		arg-1 is set
-		send "&4%arg-1% &cdoesn't seem to be a kit" to player where [{EasyKits::*} doesn't contain arg-1]
-		{EasyKits::*} contains arg-1
-		send "&cYou don't have the required permission node" to player where [player doesn't have permission "easykits.kit.%arg-1%"]
-		player has permission "easykits.kit.%arg-1%"
-		selectKit(player, arg-1)
+    executable by: players
+    trigger:
+        send "&cYou need to define a kit" to player where [arg-1 is not set]
+        arg-1 is set
+        send "&4%arg-1% &cdoesn't seem to be a kit" to player where [{EasyKits::*} doesn't contain arg-1]
+        {EasyKits::*} contains arg-1
+        send "&cYou don't have the required permission node" to player where [player doesn't have permission "easykits.kit.%arg-1%"]
+        player has permission "easykits.kit.%arg-1%"
+        selectKit(player, arg-1)
 
 command /kits [<text>]:
-	executable by: players
-	trigger:
-		listKits(player, 0)
+    executable by: players
+    trigger:
+        listKits(player, 0)
 
 options:
-	permission: easykits.deletekit
-	permission_message: &8&l| &cYou don't have the required permission node
-	cooldown: 0 seconds # when set to 0 this will allow it to be spammed
-	cooldown_message: &8&l| &cThis command is currently still on a %remaining time% cooldown
-	cooldown_bypass: skript.admin
+    permission: easykits.deletekit
+    permission_message: &8&l| &cYou don't have the required permission node
+    cooldown: 0 seconds # when set to 0 this will allow it to be spammed
+    cooldown_message: &8&l| &cThis command is currently still on a %remaining time% cooldown
+    cooldown_bypass: skript.admin
 
 command /deletekit [<text>]:
-	permission: {@permission}
-	permission message: {@permission_message}
-	cooldown: {@cooldown}
-	cooldown message: {@cooldown_message}
-	cooldown bypass: {@cooldown_bypass}
-	executable by: players
-	trigger:
-		if {EasyKits::*} doesn't contain arg-1:
-			send "&cThere doesn't seem to be any kit by that name"
-		else:
-			delete {EasyKits::%arg-1%::items::*}
-			delete {EasyKits::%arg-1%::*}
-			delete {EasyKits::%arg-1%}
-			send "&cYou've deleted the kit &4%arg-1%"
+    permission: {@permission}
+    permission message: {@permission_message}
+    cooldown: {@cooldown}
+    cooldown message: {@cooldown_message}
+    cooldown bypass: {@cooldown_bypass}
+    executable by: players
+    trigger:
+        if {EasyKits::*} doesn't contain arg-1:
+            send "&cThere doesn't seem to be any kit by that name"
+        else:
+            delete {EasyKits::%arg-1%::items::*}
+            delete {EasyKits::%arg-1%::*}
+            delete {EasyKits::%arg-1%}
+            send "&cYou've deleted the kit &4%arg-1%"
 
 #
-#		Inventory Management
+#        Inventory Management
 #
 
 on inventory close:
-	if metadata value "gui" of player is set:
-		clear metadata "gui" of player
-	if metadata value "guidata" of player is set:
-		clear metadata "guidata" of player
+    if metadata value "gui" of player is set:
+        clear metadata "gui" of player
+    if metadata value "guidata" of player is set:
+        clear metadata "guidata" of player
 
 on quit:
-	if metadata value "gui" of player is set:
-		clear metadata "gui" of player
-	if metadata value "guidata" of player is set:
-		clear metadata "guidata" of player
+    if metadata value "gui" of player is set:
+        clear metadata "gui" of player
+    if metadata value "guidata" of player is set:
+        clear metadata "guidata" of player
 
 on inventory click:
-	if metadata value "gui" of player is "kitpreview":
-		cancel event
-	else if metadata value "gui" of player is "kitlist":
-		cancel event
-		set {_page} to "%metadata value ""guidata"" of player%" parsed as number
-		if event-item is a paper:
-			click type is right mouse button or right mouse button with shift
-			close player's inventory
-			previewKit(player, uncolored name of event-item)
-		else if event-item is a arrow named "&eNext Page":
-			close player's inventory
-			listKits(player, {_page}+1)
-		else if event-item is a arrow named "&ePrevious Page":
-			close player's inventory
-			listKits(player, {_page}-1)
+    if metadata value "gui" of player is "kitpreview":
+        cancel event
+    else if metadata value "gui" of player is "kitlist":
+        cancel event
+        set {_page} to "%metadata value ""guidata"" of player%" parsed as number
+        if event-item is a paper:
+            click type is right mouse button or right mouse button with shift
+            close player's inventory
+            previewKit(player, uncolored name of event-item)
+        else if event-item is a arrow named "&eNext Page":
+            close player's inventory
+            listKits(player, {_page}+1)
+        else if event-item is a arrow named "&ePrevious Page":
+            close player's inventory
+            listKits(player, {_page}-1)
 
 #
-#		Sign Stuff
+#        Sign Stuff
 #
 
 
 on sign edit:
-	player has permission "easykits.createsigns"
-	if uncolored line 1 is "[PREVIEW KIT]":
-		if line 2 is empty:
-			set line 1 to "&c[PREVIEW KIT]"
-			set line 2 to "&4(kit name)"
-		else if {EasyKits::*} doesn't contain uncolored line 2:
-			set line 1 to "&c[PREVIEW KIT]"
-			set line 2 to "&4(kit name)"
-		else:
-			set line 1 to "&1[PREVIEW KIT]"
-			set line 2 to uncolored line 2
-	else if uncolored line 1 is "[SELECT KIT]":
-		if line 2 is empty:
-			set line 1 to "&c[SELECT KIT]"
-			set line 2 to "&4(kit name)"
-		else if {EasyKits::*} doesn't contain uncolored line 2:
-			set line 1 to "&c[SELECT KIT]"
-			set line 2 to "&4(kit name)"
-		else:
-			set line 1 to "&1[SELECT KIT]"
-			set line 2 to uncolored line 2
+    player has permission "easykits.createsigns"
+    if uncolored line 1 is "[PREVIEW KIT]":
+        if line 2 is empty:
+            set line 1 to "&c[PREVIEW KIT]"
+            set line 2 to "&4(kit name)"
+        else if {EasyKits::*} doesn't contain uncolored line 2:
+            set line 1 to "&c[PREVIEW KIT]"
+            set line 2 to "&4(kit name)"
+        else:
+            set line 1 to "&1[PREVIEW KIT]"
+            set line 2 to uncolored line 2
+    else if uncolored line 1 is "[SELECT KIT]":
+        if line 2 is empty:
+            set line 1 to "&c[SELECT KIT]"
+            set line 2 to "&4(kit name)"
+        else if {EasyKits::*} doesn't contain uncolored line 2:
+            set line 1 to "&c[SELECT KIT]"
+            set line 2 to "&4(kit name)"
+        else:
+            set line 1 to "&1[SELECT KIT]"
+            set line 2 to uncolored line 2
 
 on right click on any sign:
-	if colored line 1 of event-block is "&1[PREVIEW KIT]":
-		previewKit(player, uncolored line 2 of event-block)
-	else if colored line 1 of event-block is "&1[SELECT KIT]":
-		selectKit(player, uncolored line 2 of event-block)
+    if colored line 1 of event-block is "&1[PREVIEW KIT]":
+        previewKit(player, uncolored line 2 of event-block)
+    else if colored line 1 of event-block is "&1[SELECT KIT]":
+        selectKit(player, uncolored line 2 of event-block)
 
-command /give <item types> to <player>:
-	permission: skript.give
-	trigger:
-		send "{@colour1}Giving {@colour2}%argument 1% {@colour1}to {@colour3}%argument 2%" to player
-		loop argument 1:
-			player has permission "skript.give.%loop-item%":
-				give loop-item to argument 2
-				send "{@colour1}You recieved {@colour2}%loop-item% {@colour1}from {@colour3}%player%" to argument 2
-
-command /giveaway <item types>:
-	permission: skript.give
-	trigger:
-		send "{@colour1}Giving {@colour2}%argument 1% {@colour1}to {@colour3}everyone!" to player
-		loop argument 1:
-			player has permission "skript.give.%loop-item%":
-				give loop-item to all players
-				send "{@colour1}You recieved {@colour2}%loop-item% {@colour1}from &lGIVEAWAY." to all players
+command /give <item types> <integer = 1> [to] [<player>]:
+    permission: skript.give
+    trigger:
+        send "{@colour1}Giving %arg-2% {@colour2}%argument 1% {@colour1}to {@colour3}%argument 3 ? player%" to player
+        give arg-2 of arg-1 to player-argument if arg-3 is set
+        give arg-2 of arg-1 to player if arg-3 is not set
+        send "{@colour1}You have recieved some {@colour2}%arg-1% {@colour1}from {@colour3}%player%" to argument 3
