@@ -1,93 +1,21 @@
-#Made by xlr100#6932 (For any bugs)
-#--------------------------------------------------------
-#Configuration
-options:
-    prefix: &6&lPlaytime » #Change the prefix in chat
-    command.cooldown: 5 seconds #Change the cooldown for the command
-    leaderboard.cooldown: 5 minutes #Time it takes for the leaderboard to update
-#--------------------------------------------------------
+function getTop() :: objects:
+  if {-top::sort} ? 1 second ago < now:
+    loop all offline players:
+      set {_sort::%time played of loop-value%.%loop-value%} to loop-value
+  set {-top::sorted::*} to reversed {_sort::*}
+  set {-top::sort} to 10 minutes later
+  set metadata tag "TopPlaytime" of ("d" parsed as a player) to chest inventory with 1 row named "&2&lPlaytime Top"
+  loop 9 times:
+    exit loop if {_top::%loop-number%}
+    set {_entry} to {-top::sorted::%loop-number%}
+    set slot (loop-number)-1 of metadata tag "TopPlaytime" of ("d" parsed as a player) to clock named "&a&l%{_entry}%" with lore "" and " &a* &lPlaytime: &f%time played of {_entry}%" and "" and " &a* &lPlace: &f##%loop-number%" and ""
+  return {-top::sorted::*}
 
-on load:
-    wait 1 tick
-    PlaytimeTop()
 
-every 5 seconds:
-    loop all players:
-        add 5 to {playtime::%uuid of loop-player%}
-
-every {@leaderboard.cooldown}:
-    PlaytimeTop()
-
-on join:
-    add 1 to {playtime::joins::%uuid of player%}
-
-function PlaytimeTop():
-    loop {playtime::*}:
-        add 1 to {_size}
-        if {_low.to.high.list::%loop-value%} is not set:
-            set {_low.to.high.list::%loop-value%} to loop-index
-        else:
-            set {_n} to 0
-            loop {_size} times:
-                set {_n} to {_n}+1
-                {_low.to.high.list::%loop-value-1%.%{_n}%} is not set
-                set {_low.to.high.list::%loop-value-1%.%{_n}%} to loop-index
-                stop loop
-    wait 1 tick
-    set {_n} to size of {_low.to.high.list::*}
-    loop {_low.to.high.list::*}:
-        set {playtime.top::%{_n}%} to loop-value
-        set {_n} to {_n}-1
-
-command /playtime [<offline player = %player%>]:
-    cooldown: {@command.cooldown}
-    cooldown message: &cYou need to wait &7%remaining time% &cto do this again
+command /playtime [<text>]:
     trigger:
-        if "%arg%" is "top": #The playtime top is based on playtime hours, so you will only able to see players with at least 1 hour of playtime
-            set {_menu} to chest inventory with 5 rows named "Playtime Leaderboard"
-            loop integers from 0 to 8:
-                set slot loop-value of {_menu} to black glass pane named " "
-            loop integers from 36 to 44:
-                set slot loop-value of {_menu} to black glass pane named " "
-            set slot 9, 17, 18, 26 and 27 and 35 of {_menu} to black glass pane named " "
-            set slot 36 of {_menu} to barrier named "&cClose"
-            set {_topnumber} to 1
-            loop {playtime.top::*}:
-                set {_p} to "%loop-value%" parsed as offline player
-                if "%{_p}%" != "null":
-                    if {_topnumber} is 1:
-                        set {_slot} to 13
-                    else if {_topnumber} is 2:
-                        set {_slot} to 21
-                    else if {_topnumber} is 3:
-                        set {_slot} to 23
-                    else if {_topnumber} < 11:
-                        set {_slot} to {_topnumber} + 24
-                    set {_u} to uuid of {_p}
-                    set {_head} to {_p}'s skull
-                    set slot {_slot} of {_menu} to {_p}'s skull named "&7%{_topnumber}%. &b%{_p}%" with lore "&7Playtime &8» &6%PlaytimeFormat({playtime::%{_u}%})%"
-                    add 1 to {_topnumber}
-                    if {_topnumber} > 10:
-                        exit loop
-            open {_menu} to player
-            set {inventory::%player's uuid%} to "playtime.leaderboard"
-            
+        if arg parsed as a offline player is set:
+            send formatted "&c%arg-1%&f has a playtime of &6<tooltip:time played of %arg-1%>%time played of (arg parsed as a player)%"
         else:
-            if {playtime::%arg's uuid%} is set:
-                send colored "{@prefix} &b%arg%&7's playtime is &e%PlaytimeFormat({playtime::%arg's uuid%})%"
-            else:
-                send colored "{@prefix} &b%arg% &chas no playtime"
-
-function PlaytimeFormat(n: number) :: timespan:
-    set {_a} to "%{_n}% seconds" parsed as timespan
-    return {_a}
-
-
-on inventory click:
-    {inventory::%player's uuid%} is "playtime.leaderboard"
-    cancel event
-    if event-slot is barrier:
-        close player's inventory
-
-on inventory close:
-    delete {inventory::%player's uuid%}
+            set {_top::*} to getTop()
+            open metadata tag "TopPlaytime" of ("d" parsed as a player) to player
